@@ -1,6 +1,6 @@
 import torch 
 import numpy as np
-from gensim.models import CoherenceModel
+
 
 def get_topic_diversity(beta, topk = 25):
     num_topics = beta.shape[0]
@@ -13,7 +13,8 @@ def get_topic_diversity(beta, topk = 25):
     print('Topic diveristy is: {}'.format(TD))
     return TD
 
-def get_document_frequency(data, wi, wj=None):
+
+def get_document_frequency(data, wi, wj = None):
     if wj is None:
         D_wi = 0
         for l in range(len(data)):
@@ -38,6 +39,7 @@ def get_document_frequency(data, wi, wj=None):
             if wi in doc:
                 D_wi_wj += 1
     return D_wj, D_wi_wj 
+
 
 def get_topic_coherence(beta, data, vocab, top_n = 10):
     D = len(data) ## number of docs...data is list of documents
@@ -75,31 +77,6 @@ def get_topic_coherence(beta, data, vocab, top_n = 10):
     TC = np.mean(TC) / counter
     print('Topic coherence is: {}'.format(TC))
     return TC
-
-
-def get_gensim_coherence(topics, documents, dictionary, coherence):
-    """Calculates topic coherence using gensim's coherence pipeline.
-
-    Parameters:
-
-    topics (list of str list): topic words for each topic
-    
-    documents (list of str): set of documents
-
-    dictionary (gensim.corpora.Dictionary): gensim dicionary of words from dataset
-
-    coherence (str): coherence type. Can be 'c_v', 'u_mass', 'c_uci' or 'c_npmi'
-
-    Returns:
-
-    float: coherence score
-    """
-    return CoherenceModel(
-        topics=topics, 
-        texts=documents, 
-        dictionary=dictionary, 
-        coherence=coherence
-    ).get_coherence()
 
 
 def nearest_neighbors(word, embeddings, vocab, n_most_similar = 20):

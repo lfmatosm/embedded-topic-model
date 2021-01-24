@@ -14,9 +14,10 @@ import scipy.io
 from torch import nn, optim
 from torch.nn import functional as F
 
-from src import data
-from src.model import Model
-from src.utils import nearest_neighbors, get_topic_coherence, get_topic_diversity
+from embedded_topic_model import data
+from embedded_topic_model.model import Model
+from embedded_topic_model.utils import metrics
+
 
 class ETM:
     """
@@ -318,7 +319,7 @@ class ETM:
             
             neighbors = {}
             for word in queries:
-                neighbors[word] = nearest_neighbors(word, self.embeddings, self.vocab)
+                neighbors[word] = metrics.nearest_neighbors(word, self.embeddings, self.vocab)
             
             return neighbors
 
@@ -414,7 +415,7 @@ class ETM:
 
         with torch.no_grad():
             beta = self.model.get_beta().data.cpu().numpy()
-            return get_topic_coherence(beta, self.train_tokens, self.vocab)
+            return metrics.get_topic_coherence(beta, self.train_tokens, self.vocab)
     
 
     def get_topic_diversity(self):
@@ -423,4 +424,4 @@ class ETM:
 
         with torch.no_grad():
             beta = self.model.get_beta().data.cpu().numpy()
-            return get_topic_diversity(beta)
+            return metrics.get_topic_diversity(beta)

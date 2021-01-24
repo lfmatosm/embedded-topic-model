@@ -11,21 +11,19 @@ import math
 import random 
 import sys
 import matplotlib.pyplot as plt 
-from src import data
+from embedded_topic_model import data
 import scipy.io
 from gensim.corpora import Dictionary
 import json
-
+import joblib
 from torch import nn, optim
 from torch.nn import functional as F
-
 import pandas as pd
 
-from src.model import Model
-from src.utils import nearest_neighbors, get_topic_coherence, get_topic_diversity, get_gensim_coherence
-from src.training.utils import get_topic_diversity as my_diversity, get_coherence_score as my_coherence, get_topic_word_matrix
-from src.training import constants
-import joblib
+from embedded_topic_model.model import Model
+from embedded_topic_model.utils.metrics import nearest_neighbors, get_topic_coherence, get_topic_diversity, get_gensim_coherence
+from embedded_topic_model.training.utils import get_topic_diversity as my_diversity, get_coherence_score as my_coherence, get_topic_word_matrix
+from embedded_topic_model.training import constants
 
 
 OUTPUT_PATH = constants.CSV_RESULTS_FOLDER + "etm/"
