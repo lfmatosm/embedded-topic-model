@@ -33,6 +33,10 @@ def _create_dictionaries(vocabulary):
     return word2id, id2word
 
 
+def _to_numpy_array(documents):
+    return np.array([[np.array(doc) for doc in documents]], dtype=object)
+
+
 def create_etm_datasets(dataset, train_size = 1.0, test_size = 0.0, min_df = 1, max_df = 100.0, debug_mode = False):
     vectorizer = CountVectorizer(min_df=min_df, max_df=max_df)
     vectorized_documents = vectorizer.fit_transform(dataset)
@@ -155,28 +159,28 @@ def create_etm_datasets(dataset, train_size = 1.0, test_size = 0.0, min_df = 1, 
     bow_dev_tokens, bow_dev_counts = _split_bow(bow_dev, n_docs_dev)
 
     train_dataset = {
-        'tokens': bow_train_tokens,
-        'counts': bow_train_counts,
+        'tokens': _to_numpy_array(bow_train_tokens),
+        'counts': _to_numpy_array(bow_train_counts),
     }
 
     test_dataset = {
         'test': {
-            'tokens': bow_test_tokens,
-            'counts': bow_test_counts,
+            'tokens': _to_numpy_array(bow_test_tokens),
+            'counts': _to_numpy_array(bow_test_counts),
         },
         'test1': {
-            'tokens': bow_test_h1_tokens,
-            'counts': bow_test_h1_counts,
+            'tokens': _to_numpy_array(bow_test_h1_tokens),
+            'counts': _to_numpy_array(bow_test_h1_counts),
         },
         'test2': {
-            'tokens': bow_test_h2_tokens,
-            'counts': bow_test_h2_counts,
+            'tokens': _to_numpy_array(bow_test_h2_tokens),
+            'counts': _to_numpy_array(bow_test_h2_counts),
         }
     }
 
     dev_dataset = {
-        'tokens': bow_dev_tokens,
-        'counts': bow_dev_counts,
+        'tokens': _to_numpy_array(bow_dev_tokens),
+        'counts': _to_numpy_array(bow_dev_counts),
     }
 
     return vocabulary, train_dataset, test_dataset, dev_dataset

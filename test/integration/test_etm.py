@@ -1,23 +1,24 @@
 import pytest
+import joblib
 
 from embedded_topic_model import etm
+from embedded_topic_model import utils
 
 
 class TestETM:
-    def test_etm_training_with_preprocessed_reddit_dataset(self):
+    def test_etm_training_with_preprocessed_dummy_dataset(self):
+        vocabulary, embeddings, train_dataset, _, _ = joblib.load('test/resources/train_resources.test')
+
         etm_instance = etm.ETM(
-            dataset='reddit-test',
-            data_path='embedded_topic_model/datasets_for_training/min_df_0.01',
-            emb_path='embedded_topic_model/datasets_for_training/etm_w2v_embedding.txt',
-            num_topics=5,
-            epochs=100,
+            vocabulary,
+            embeddings,
+            num_topics=3,
+            epochs=50,
             train_embeddings=False,
         )
 
-        etm_instance.fit(None)
+        etm_instance.fit(train_dataset)
 
         topics = etm_instance.get_topics()
 
-        assert isinstance(topics, list) and len(topics) == 5
-
-        
+        assert isinstance(topics, list) and len(topics) == 3

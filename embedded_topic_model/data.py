@@ -5,6 +5,7 @@ import numpy as np
 import torch 
 import scipy.io
 
+
 def _fetch(path, name):
     if name == 'train':
         token_file = os.path.join(path, 'bow_tr_tokens.mat')
@@ -31,6 +32,7 @@ def _fetch(path, name):
                         'tokens_2': tokens_2, 'counts_2': counts_2}
     return {'tokens': tokens, 'counts': counts}
 
+
 def get_data(path):
     with open(os.path.join(path, 'vocab.pkl'), 'rb') as f:
         vocab = pickle.load(f)
@@ -41,6 +43,7 @@ def get_data(path):
 
     return vocab, train, valid, test
 
+
 def get_batch(tokens, counts, ind, vocab_size, device, emsize=300):
     """fetch input data by batch."""
     batch_size = len(ind)
@@ -49,7 +52,7 @@ def get_batch(tokens, counts, ind, vocab_size, device, emsize=300):
     for i, doc_id in enumerate(ind):
         doc = tokens[doc_id]
         count = counts[doc_id]
-        L = count.shape[1]
+        
         if len(doc) == 1: 
             doc = [doc.squeeze()]
             count = [count.squeeze()]

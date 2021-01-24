@@ -1,4 +1,5 @@
 import gensim
+import numpy as np
 
 
 # Class for a memory-friendly iterator over the dataset
@@ -20,7 +21,7 @@ def create_word2vec_embedding_from_dataset(
     If a file path is given, the file must be composed
     by a sequence of sentences separated by \\n.
 
-    If the dataset is big, prefer using the file path.
+    If the dataset is big, prefer using its file path.
 
     Parameters:
         dataset (str or list of str): txt file containing the dataset or a list of sentences
@@ -36,7 +37,7 @@ def create_word2vec_embedding_from_dataset(
     Returns:
         dict: dictionary containing the mapping between words and their vector representations. 
         Example:
-            { 'water': ['0.024187922', '0.053684134', '0.034520667', ... ] }
+            { 'water': nd.array([0.024187922, 0.053684134, 0.034520667, ... ]) }
     """
     assert isinstance(dataset, str) or isinstance(dataset, list), \
         'dataset must be file path or list of sentences'
@@ -48,12 +49,13 @@ def create_word2vec_embedding_from_dataset(
     embeddings = {}
     for v in list(model.wv.vocab):
         vec = list(model.wv.__getitem__(v))
-        embeddings[v] = ['%.9f' % val for val in vec]
+        embeddings[v] = np.array(vec).astype(np.float)
     
     # Write the embeddings to a file
     if embedding_file_path is not None:
         with open(embedding_file_path, 'w') as f:
             for word, vector in embeddings.items():
-                f.write(f'{word} {" ".join(vector)}\n')
+                vector_str = ['%.9f' % val for val in list(vector)]
+                f.write(f'{word} {" ".join(vector_str)}\n')
     
     return embeddings
