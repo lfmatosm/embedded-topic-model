@@ -18,7 +18,8 @@ def get_document_frequency(data, wi, wj = None):
     if wj is None:
         D_wi = 0
         for l in range(len(data)):
-            doc = data[l].squeeze(0)
+            # FIXME: compatibility fix for original ETM code and updated one
+            doc = data[l].squeeze(0) if data[l].shape[0] == 1 else data[l]
             if len(doc) == 1: 
                 continue
             else:
@@ -29,7 +30,8 @@ def get_document_frequency(data, wi, wj = None):
     D_wj = 0
     D_wi_wj = 0
     for l in range(len(data)):
-        doc = data[l].squeeze(0)
+        # FIXME: compatibility fix for original ETM code and updated one
+        doc = data[l].squeeze(0) if data[l].shape[0] == 1 else data[l]
         if len(doc) == 1: 
             doc = [doc.squeeze()]
         else:

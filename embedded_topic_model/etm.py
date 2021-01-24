@@ -369,22 +369,22 @@ class ETM(object):
             return torch.cat(tuple(thetas), 0)
 
 
-    def get_topic_coherence(self):
+    def get_topic_coherence(self, top_n = 10):
         self.model = self.model.to(self.device)
         self.model.eval()
 
         with torch.no_grad():
             beta = self.model.get_beta().data.cpu().numpy()
-            return metrics.get_topic_coherence(beta, self.train_tokens, self.vocabulary)
+            return metrics.get_topic_coherence(beta, self.train_tokens, self.vocabulary, top_n)
     
 
-    def get_topic_diversity(self):
+    def get_topic_diversity(self, top_n = 25):
         self.model = self.model.to(self.device)
         self.model.eval()
 
         with torch.no_grad():
             beta = self.model.get_beta().data.cpu().numpy()
-            return metrics.get_topic_diversity(beta)
+            return metrics.get_topic_diversity(beta, top_n)
 
 
     def save_model(self, model_path):

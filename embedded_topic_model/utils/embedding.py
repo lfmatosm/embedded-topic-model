@@ -42,6 +42,10 @@ def create_word2vec_embedding_from_dataset(
     assert isinstance(dataset, str) or isinstance(dataset, list), \
         'dataset must be file path or list of sentences'
 
+    if isinstance(dataset, str):
+        assert isinstance(embedding_file_path, str), \
+            'if dataset is a file path, an output embeddings file path must be given'
+
     sentences = MemoryFriendlyFileIterator(dataset) if isinstance(dataset, str) else [document.split() for document in dataset]
     model = gensim.models.Word2Vec(sentences, min_count=min_count, sg=sg, size=dim_rho, 
         iter=iters, workers=workers, negative=negative_samples, window=window_size)
