@@ -26,7 +26,7 @@ class ETM(object):
 
         vocabulary (list of str): training dataset vocabulary
         embeddings (str or dict): directory containing word embeddings or dictionary containing word embeddings mapping
-        model_path (str): path to save trained model
+        model_path (str): path to save trained model. If None, the model won't be automatically saved
         batch_size (int): input batch size for training
         num_topics (int): number of topics
         rho_size (int): dimension of rho
@@ -65,7 +65,7 @@ class ETM(object):
     ):
         self.vocabulary = vocabulary
         self.vocabulary_size = len(self.vocabulary)
-        self.model_path = model_path if model_path is not None else f'./etm_{num_topics}.etm'
+        self.model_path = model_path
         self.batch_size = batch_size
         self.num_topics = num_topics
         self.rho_size = rho_size
@@ -311,7 +311,8 @@ class ETM(object):
             if self.eval_perplexity:
                 val_ppl = self.get_perplexity_for_document_completion(test_data)
                 if val_ppl < best_val_ppl:
-                    self.save_model(self.model_path)
+                    if self.model_path is not None:
+                        self.save_model(self.model_path)
                     best_epoch = epoch
                     best_val_ppl = val_ppl
                 else:
@@ -325,9 +326,10 @@ class ETM(object):
             if self.debug_mode and (epoch % self.visualize_every == 0):
                 print(f'Topics: {self.get_topics()}')
         
-        self.save_model(self.model_path)
+        if self.model_path is not None:
+            self.save_model(self.model_path)
 
-        if self.eval_perplexity:
+        if self.eval_perplexity and self.model_path is not None:
             self.load_model(self.model_path)
             val_ppl = self.get_perplexity_for_document_completion(train_data)
 
