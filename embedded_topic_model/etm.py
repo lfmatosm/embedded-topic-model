@@ -49,9 +49,6 @@ class ETM(object):
         log_interval (int): when to log training
         visualize_every (int): when to visualize results
         eval_batch_size (int): input batch size for evaluation
-        load_from (str): the name of the ckpt to eval from
-        tc (bool): whether to compute topic coherence or not
-        td (bool): whether to compute topic diversity or not
         eval_perplexity (bool): whether to compute perplexity on document completion task
         debug_mode (bool): wheter or not should log model operations
     """
@@ -60,8 +57,7 @@ class ETM(object):
         theta_act='relu', train_embeddings=False, lr=0.005, lr_factor=4.0, epochs=20,
         optimizer_type='adam', seed=2019, enc_drop=0.0, clip=0.0,
         nonmono=10, wdecay=1.2e-6, anneal_lr=False, bow_norm=True, num_words=10,
-        log_interval=2, visualize_every=10, eval_batch_size=1000, load_from='', tc=False,
-        td=False, eval_perplexity=False, debug_mode=True,
+        log_interval=2, visualize_every=10, eval_batch_size=1000, eval_perplexity=False, debug_mode=True,
     ):
         self.vocabulary = vocabulary
         self.vocabulary_size = len(self.vocabulary)
@@ -72,24 +68,18 @@ class ETM(object):
         self.emb_size = emb_size
         self.t_hidden_size = t_hidden_size
         self.theta_act = theta_act
-        self.train_embeddings = train_embeddings
-        self.lr = lr
         self.lr_factor = lr_factor
         self.epochs = epochs
         self.seed = seed
         self.enc_drop = enc_drop
         self.clip = clip
         self.nonmono = nonmono
-        self.wdecay = wdecay
         self.anneal_lr = anneal_lr
         self.bow_norm = bow_norm
         self.num_words = num_words
         self.log_interval = log_interval
         self.visualize_every = visualize_every
         self.eval_batch_size = eval_batch_size
-        self.load_from = load_from
-        self.tc = tc
-        self.td = td
         self.eval_perplexity = eval_perplexity
         self.debug_mode = debug_mode
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -99,12 +89,11 @@ class ETM(object):
         if torch.cuda.is_available():
             torch.cuda.manual_seed(self.seed)
 
-        self.embeddings = None if self.train_embeddings else self._initialize_embeddings(embeddings)
+        self.embeddings = None if train_embeddings else self._initialize_embeddings(embeddings)
 
-        ## define model and optimizer
         self.model = Model(self.device, self.num_topics, self.vocabulary_size, self.t_hidden_size, self.rho_size, self.emb_size, 
-                        self.theta_act, self.embeddings, self.train_embeddings, self.enc_drop).to(self.device)
-        self.optimizer = self._get_optimizer(optimizer_type)
+                        self.theta_act, self.embeddings, train_embeddings, self.enc_drop).to(self.device)
+        self.optimizer = self._get_optimizer(optimizer_type, lr, wdecay)
     
 
     def __str__(self):
@@ -135,21 +124,21 @@ class ETM(object):
         return torch.from_numpy(model_embeddings).to(self.device)
 
 
-    def _get_optimizer(self, optimizer_type):
+    def _get_optimizer(self, optimizer_type, learning_rate, wdecay):
         if optimizer_type == 'adam':
-            return optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.wdecay)
+            return optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=wdecay)
         elif optimizer_type == 'adagrad':
-            return optim.Adagrad(self.model.parameters(), lr=self.lr, weight_decay=self.wdecay)
+            return optim.Adagrad(self.model.parameters(), lr=learning_rate, weight_decay=wdecay)
         elif optimizer_type == 'adadelta':
-            return optim.Adadelta(self.model.parameters(), lr=self.lr, weight_decay=self.wdecay)
+            return optim.Adadelta(self.model.parameters(), lr=learning_rate, weight_decay=wdecay)
         elif optimizer_type == 'rmsprop':
-            return optim.RMSprop(self.model.parameters(), lr=self.lr, weight_decay=self.wdecay)
+            return optim.RMSprop(self.model.parameters(), lr=learning_rate, weight_decay=wdecay)
         elif optimizer_type == 'asgd':
-            return optim.ASGD(self.model.parameters(), lr=self.lr, t0=0, lambd=0., weight_decay=self.wdecay)
+            return optim.ASGD(self.model.parameters(), lr=learning_rate, t0=0, lambd=0., weight_decay=wdecay)
         else:
             if self.debug_mode:
                 print('Defaulting to vanilla SGD')
-            return optim.SGD(self.model.parameters(), lr=self.lr)
+            return optim.SGD(self.model.parameters(), lr=learning_rate)
 
 
     def _set_training_data(self, train_data):
