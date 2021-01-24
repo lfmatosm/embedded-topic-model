@@ -5,12 +5,11 @@ import math
 
 from torch import nn
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-class ETM(nn.Module):
-    def __init__(self, num_topics, vocab_size, t_hidden_size, rho_size, emsize, 
+class Model(nn.Module):
+    def __init__(self, device, num_topics, vocab_size, t_hidden_size, rho_size, emsize, 
                     theta_act, embeddings=None, train_embeddings=True, enc_drop=0.5):
-        super(ETM, self).__init__()
+        super(Model, self).__init__()
 
         ## define hyperparameters
         self.num_topics = num_topics
@@ -22,6 +21,8 @@ class ETM(nn.Module):
         self.t_drop = nn.Dropout(enc_drop)
 
         self.theta_act = self.get_activation(theta_act)
+
+        self.device = device
         
         ## define the word embedding matrix \rho
         if train_embeddings:
@@ -29,7 +30,7 @@ class ETM(nn.Module):
         else:
             num_embeddings, emsize = embeddings.size()
             rho = nn.Embedding(num_embeddings, emsize)
-            self.rho = embeddings.clone().float().to(device)
+            self.rho = embeddings.clone().float().to(self.device)
 
         ## define the matrix containing the topic embeddings
         self.alphas = nn.Linear(rho_size, num_topics, bias=False)#nn.Parameter(torch.randn(rho_size, num_topics))

@@ -11,7 +11,7 @@ import math
 import random 
 import sys
 import matplotlib.pyplot as plt 
-import data
+from src import data
 import scipy.io
 from gensim.corpora import Dictionary
 import json
@@ -21,10 +21,10 @@ from torch.nn import functional as F
 
 import pandas as pd
 
-from etm import ETM
-from utils import nearest_neighbors, get_topic_coherence, get_topic_diversity, get_gensim_coherence
-from training.utils import get_topic_diversity as my_diversity, get_coherence_score as my_coherence, get_topic_word_matrix
-from training import constants
+from src.model import Model
+from src.utils import nearest_neighbors, get_topic_coherence, get_topic_diversity, get_gensim_coherence
+from src.training.utils import get_topic_diversity as my_diversity, get_coherence_score as my_coherence, get_topic_word_matrix
+from src.training import constants
 import joblib
 
 
@@ -73,7 +73,7 @@ parser.add_argument('--visualize_every', type=int, default=10, help='when to vis
 parser.add_argument('--eval_batch_size', type=int, default=1000, help='input batch size for evaluation')
 parser.add_argument('--tc', type=int, default=1, help='whether to compute topic coherence or not')
 parser.add_argument('--td', type=int, default=1, help='whether to compute topic diversity or not')
-parser.add_argument('--eval_perplexity', type=int, default=1, help='whether to compute perplexity on document completion task')
+parser.add_argument('--eval_perplexity', type=int, default=0, help='whether to compute perplexity on document completion task')
 
 args = parser.parse_args()
 
@@ -194,7 +194,7 @@ for K_value in list(map(lambda x: int(x), args.topics)):
             args.lr, args.batch_size, args.rho_size, args.train_embeddings))
 
     ## define model and optimizer
-    model = ETM(K_value, vocab_size, args.t_hidden_size, args.rho_size, args.emb_size, 
+    model = Model(device, K_value, vocab_size, args.t_hidden_size, args.rho_size, args.emb_size, 
                     args.theta_act, embeddings, args.train_embeddings, args.enc_drop).to(device)
 
     print('model: {}'.format(model))
@@ -498,7 +498,7 @@ for K_value in list(map(lambda x: int(x), args.topics)):
             queries = ['andrew', 'woman', 'computer', 'sports', 'religion', 'man', 'love', 
                             'intelligence', 'money', 'politics', 'health', 'people', 'family']
             print('\n')
-            print('ETM embeddings...')
+            print('Model embeddings...')
             for word in queries:
                 print('word: {} .. etm neighbors: {}'.format(word, nearest_neighbors(word, rho_etm, vocab)))
             print('\n')

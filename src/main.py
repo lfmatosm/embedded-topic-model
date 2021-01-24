@@ -11,14 +11,14 @@ import math
 import random 
 import sys
 import matplotlib.pyplot as plt 
-import data
+from src import data
 import scipy.io
 
 from torch import nn, optim
 from torch.nn import functional as F
 
-from etm import ETM
-from utils import nearest_neighbors, get_topic_coherence, get_topic_diversity
+from src.model import Model
+from src.utils import nearest_neighbors, get_topic_coherence, get_topic_diversity
 
 parser = argparse.ArgumentParser(description='The Embedded Topic Model')
 
@@ -137,7 +137,7 @@ else:
             args.lr, args.batch_size, args.rho_size, args.train_embeddings))
 
 ## define model and optimizer
-model = ETM(args.num_topics, vocab_size, args.t_hidden_size, args.rho_size, args.emb_size, 
+model = Model(device, args.num_topics, vocab_size, args.t_hidden_size, args.rho_size, args.emb_size, 
                 args.theta_act, embeddings, args.train_embeddings, args.enc_drop).to(device)
 
 print('model: {}'.format(model))
@@ -374,7 +374,7 @@ else:
             queries = ['andrew', 'woman', 'computer', 'sports', 'religion', 'man', 'love', 
                             'intelligence', 'money', 'politics', 'health', 'people', 'family']
             print('\n')
-            print('ETM embeddings...')
+            print('Model embeddings...')
             for word in queries:
                 print('word: {} .. etm neighbors: {}'.format(word, nearest_neighbors(word, rho_etm, vocab)))
             print('\n')

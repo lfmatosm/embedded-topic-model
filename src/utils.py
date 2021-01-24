@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from gensim.models import CoherenceModel
 
-def get_topic_diversity(beta, topk):
+def get_topic_diversity(beta, topk = 25):
     num_topics = beta.shape[0]
     list_w = np.zeros((num_topics, topk))
     for k in range(num_topics):
@@ -102,7 +102,7 @@ def get_gensim_coherence(topics, documents, dictionary, coherence):
     ).get_coherence()
 
 
-def nearest_neighbors(word, embeddings, vocab):
+def nearest_neighbors(word, embeddings, vocab, n_most_similar = 20):
     vectors = embeddings.data.cpu().numpy() 
     index = vocab.index(word)
     print('vectors: ', vectors.shape)
@@ -115,6 +115,6 @@ def nearest_neighbors(word, embeddings, vocab):
     ranks = ranks / denom
     mostSimilar = []
     [mostSimilar.append(idx) for idx in ranks.argsort()[::-1]]
-    nearest_neighbors = mostSimilar[:20]
+    nearest_neighbors = mostSimilar[:n_most_similar]
     nearest_neighbors = [vocab[comp] for comp in nearest_neighbors]
     return nearest_neighbors

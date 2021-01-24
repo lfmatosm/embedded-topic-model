@@ -1,46 +1,30 @@
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.datasets import fetch_20newsgroups
 import numpy as np
 import pickle
 import random
 from scipy import sparse
 import itertools
 from scipy.io import savemat, loadmat
-import re
-import string
+import os
 
 # Maximum / minimum document frequency
 max_df = 0.7
-min_df = 10  # choose desired value for min_df
+min_df = 100  # choose desired value for min_df
 
 # Read stopwords
 with open('stops.txt', 'r') as f:
     stops = f.read().split('\n')
 
 # Read data
-print('reading data...')
-train_data = fetch_20newsgroups(subset='train')
-test_data = fetch_20newsgroups(subset='test')
-
-init_docs_tr = [re.findall(r'''[\w']+|[.,!?;-~{}`´_<=>:/@*()&'$%#"]''', train_data.data[doc]) for doc in range(len(train_data.data))]
-init_docs_ts = [re.findall(r'''[\w']+|[.,!?;-~{}`´_<=>:/@*()&'$%#"]''', test_data.data[doc]) for doc in range(len(test_data.data))]
-
-def contains_punctuation(w):
-    return any(char in string.punctuation for char in w)
-
-def contains_numeric(w):
-    return any(char.isdigit() for char in w)
-    
-init_docs = init_docs_tr + init_docs_ts
-init_docs = [[w.lower() for w in init_docs[doc] if not contains_punctuation(w)] for doc in range(len(init_docs))]
-init_docs = [[w for w in init_docs[doc] if not contains_numeric(w)] for doc in range(len(init_docs))]
-init_docs = [[w for w in init_docs[doc] if len(w)>1] for doc in range(len(init_docs))]
-init_docs = [" ".join(init_docs[doc]) for doc in range(len(init_docs))]
+print('reading text file...')
+data_file = 'raw/new_york_times_text/nyt_docs.txt'
+with open(data_file, 'r') as f:
+    docs = f.readlines()
 
 # Create count vectorizer
 print('counting document frequency of words...')
 cvectorizer = CountVectorizer(min_df=min_df, max_df=max_df, stop_words=None)
-cvz = cvectorizer.fit_transform(init_docs).sign()
+cvz = cvectorizer.fit_transform(docs).sign()
 
 # Get vocabulary
 print('building the vocabulary...')
@@ -61,6 +45,7 @@ vocab_aux = [id2word[idx_sort[cc]] for cc in range(v_size)]
 # Filter out stopwords (if any)
 vocab_aux = [w for w in vocab_aux if w not in stops]
 print('  vocabulary size after removing stopwords from list: {}'.format(len(vocab_aux)))
+print('  vocabulary after removing stopwords: {}'.format(len(vocab_aux)))
 
 # Create dictionary and inverse dictionary
 vocab = vocab_aux
@@ -70,22 +55,23 @@ id2word = dict([(j, w) for j, w in enumerate(vocab)])
 
 # Split in train/test/valid
 print('tokenizing documents and splitting into train/test/valid...')
-num_docs_tr = len(init_docs_tr)
-trSize = num_docs_tr-100
-tsSize = len(init_docs_ts)
-vaSize = 100
-idx_permute = np.random.permutation(num_docs_tr).astype(int)
+num_docs = cvz.shape[0]
+trSize = int(np.floor(0.85*num_docs))
+tsSize = int(np.floor(0.10*num_docs))
+vaSize = int(num_docs - trSize - tsSize)
+del cvz
+idx_permute = np.random.permutation(num_docs).astype(int)
 
 # Remove words not in train_data
-vocab = list(set([w for idx_d in range(trSize) for w in init_docs[idx_permute[idx_d]].split() if w in word2id]))
+vocab = list(set([w for idx_d in range(trSize) for w in docs[idx_permute[idx_d]].split() if w in word2id]))
 word2id = dict([(w, j) for j, w in enumerate(vocab)])
 id2word = dict([(j, w) for j, w in enumerate(vocab)])
 print('  vocabulary after removing words not in train: {}'.format(len(vocab)))
 
-# Split in train/test/valid
-docs_tr = [[word2id[w] for w in init_docs[idx_permute[idx_d]].split() if w in word2id] for idx_d in range(trSize)]
-docs_va = [[word2id[w] for w in init_docs[idx_permute[idx_d+trSize]].split() if w in word2id] for idx_d in range(vaSize)]
-docs_ts = [[word2id[w] for w in init_docs[idx_d+num_docs_tr].split() if w in word2id] for idx_d in range(tsSize)]
+docs_tr = [[word2id[w] for w in docs[idx_permute[idx_d]].split() if w in word2id] for idx_d in range(trSize)]
+docs_ts = [[word2id[w] for w in docs[idx_permute[idx_d+trSize]].split() if w in word2id] for idx_d in range(tsSize)]
+docs_va = [[word2id[w] for w in docs[idx_permute[idx_d+trSize+tsSize]].split() if w in word2id] for idx_d in range(vaSize)]
+del docs
 
 print('  number of documents (train): {} [this should be equal to {}]'.format(len(docs_tr), trSize))
 print('  number of documents (test): {} [this should be equal to {}]'.format(len(docs_ts), tsSize))
@@ -183,7 +169,7 @@ del doc_indices_ts_h1
 del doc_indices_ts_h2
 del doc_indices_va
 
-# Write the vocabulary to a file
+# Save vocabulary to file
 path_save = './min_df_' + str(min_df) + '/'
 if not os.path.isdir(path_save):
     os.system('mkdir -p ' + path_save)
