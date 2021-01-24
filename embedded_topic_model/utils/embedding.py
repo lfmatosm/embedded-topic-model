@@ -16,8 +16,11 @@ def create_word2vec_embedding_from_file(
     workers=25, negative_samples=10, window_size=4, iters=50,
     embedding_file_path=None):
     """
-    Creates a Word2Vec embedding from dataset file. The given file should be composed
+    Creates a Word2Vec embedding from dataset file or a list of sentences. 
+    If a file path is given, the file must be composed
     by a sequence of sentences separated by \\n.
+
+    If the dataset is big, prefer using the file path.
 
     Parameters:
         dataset (str or list of str): txt file containing the dataset or a list of sentences
