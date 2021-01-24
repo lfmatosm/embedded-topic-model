@@ -11,7 +11,6 @@ import math
 import random 
 import sys
 import matplotlib.pyplot as plt 
-from embedded_topic_model import data
 import scipy.io
 from gensim.corpora import Dictionary
 import json
@@ -21,6 +20,7 @@ from torch.nn import functional as F
 import pandas as pd
 
 from embedded_topic_model.model import Model
+from embedded_topic_model.utils import data
 from embedded_topic_model.utils.metrics import nearest_neighbors, get_topic_coherence, get_topic_diversity, get_gensim_coherence
 from embedded_topic_model.training.utils import get_topic_diversity as my_diversity, get_coherence_score as my_coherence, get_topic_word_matrix
 from embedded_topic_model.training import constants

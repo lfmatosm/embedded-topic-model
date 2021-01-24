@@ -11,13 +11,13 @@ import math
 import random 
 import sys
 import matplotlib.pyplot as plt 
-from embedded_topic_model import data
 import scipy.io
 
 from torch import nn, optim
 from torch.nn import functional as F
 
 from embedded_topic_model.model import Model
+from embedded_topic_model.utils import data
 from embedded_topic_model.utils.metrics import nearest_neighbors, get_topic_coherence, get_topic_diversity
 
 parser = argparse.ArgumentParser(description='The Embedded Topic Model')
