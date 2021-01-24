@@ -11,7 +11,7 @@ class MemoryFriendlyFileIterator(object):
             yield line.split()
 
 
-def create_word2vec_embedding_from_file(
+def create_word2vec_embedding_from_dataset(
     dataset, dim_rho=300, min_count=1, sg=1,
     workers=25, negative_samples=10, window_size=4, iters=50,
     embedding_file_path=None):
@@ -54,7 +54,6 @@ def create_word2vec_embedding_from_file(
     if embedding_file_path is not None:
         with open(embedding_file_path, 'w') as f:
             for word, vector in embeddings.items():
-                vector_str = ' '.join(vector)
-                f.write(f'{word} {vector_str}\n')
+                f.write(f'{word} {" ".join(vector)}\n')
     
     return embeddings
