@@ -34,7 +34,7 @@ def _create_dictionaries(vocabulary):
 
 
 def _to_numpy_array(documents):
-    return np.array([[np.array(doc) for doc in documents]], dtype=object)
+    return np.array([[np.array(doc) for doc in documents]], dtype=object).squeeze()
 
 
 def create_etm_datasets(dataset, train_size = 1.0, test_size = 0.0, min_df = 1, max_df = 100.0, debug_mode = False):
