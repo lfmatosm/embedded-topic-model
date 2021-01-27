@@ -24,6 +24,7 @@ def create_word2vec_embedding_from_dataset(
     If the dataset is big, prefer using its file path.
 
     Parameters:
+    ===
         dataset (str or list of str): txt file containing the dataset or a list of sentences
         dim_rho (int): dimensionality of the word embeddings
         min_count (int): minimum term frequency (to define the vocabulary)
@@ -35,6 +36,7 @@ def create_word2vec_embedding_from_dataset(
         embedding_file_path (str): optional. File to save the word embeddings
     
     Returns:
+    ===
         dict: dictionary containing the mapping between words and their vector representations. 
         Example:
             { 'water': nd.array([0.024187922, 0.053684134, 0.034520667, ... ]) }

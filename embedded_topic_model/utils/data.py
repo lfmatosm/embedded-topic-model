@@ -48,11 +48,10 @@ def get_batch(tokens, counts, ind, vocab_size, device, emsize=300):
     """fetch input data by batch."""
     batch_size = len(ind)
     data_batch = np.zeros((batch_size, vocab_size))
-    
+
     for i, doc_id in enumerate(ind):
         doc = tokens[doc_id]
         count = counts[doc_id]
-        # FIXME: code necessary only for original ETM model
         if len(doc) == 1: 
             doc = [doc.squeeze()]
             count = [count.squeeze()]

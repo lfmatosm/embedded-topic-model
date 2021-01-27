@@ -37,7 +37,7 @@ def _to_numpy_array(documents):
     return np.array([[np.array(doc) for doc in documents]], dtype=object).squeeze()
 
 
-def create_etm_datasets(dataset, train_size = 1.0, test_size = 0.0, min_df = 1, max_df = 100.0, debug_mode = False):
+def create_etm_datasets(dataset, train_size = 1.0, min_df = 1, max_df = 100.0, debug_mode = False):
     vectorizer = CountVectorizer(min_df=min_df, max_df=max_df)
     vectorized_documents = vectorizer.fit_transform(dataset)
 
@@ -67,14 +67,13 @@ def create_etm_datasets(dataset, train_size = 1.0, test_size = 0.0, min_df = 1, 
     # Creates vocabulary
     vocabulary = [id2word[idx_sort[cc]] for cc in range(v_size)]
 
-    # Split in train/test/valid
+    # Split in train/test
     if debug_mode:
-        print('Tokenizing documents and splitting into train/test/valid...')
+        print('Tokenizing documents and splitting into train/test...')
     
     num_docs = signed_documents.shape[0]
     train_dataset_size = int(np.floor(train_size * num_docs))
-    test_dataset_size = int(np.floor(test_size * num_docs))
-    dev_dataset_size = int(num_docs - train_dataset_size - test_dataset_size)
+    test_dataset_size = int(num_docs - train_dataset_size)
     idx_permute = np.random.permutation(num_docs).astype(int)
 
     # Remove words not in train_data
@@ -88,27 +87,23 @@ def create_etm_datasets(dataset, train_size = 1.0, test_size = 0.0, min_df = 1, 
 
     docs_train = [[word2id[w] for w in documents_without_stop_words[idx_permute[idx_d]] if w in word2id] for idx_d in range(train_dataset_size)]
     docs_test = [[word2id[w] for w in documents_without_stop_words[idx_permute[idx_d+train_dataset_size]] if w in word2id] for idx_d in range(test_dataset_size)]
-    docs_dev = [[word2id[w] for w in documents_without_stop_words[idx_permute[idx_d+train_dataset_size+test_dataset_size]] if w in word2id] for idx_d in range(dev_dataset_size)]
 
     if debug_mode:
         print('Number of documents (train_dataset): {} [this should be equal to {}]'.format(len(docs_train), train_dataset_size))
         print('Number of documents (test_dataset): {} [this should be equal to {}]'.format(len(docs_test), test_dataset_size))
-        print('Number of documents (valid_dataset): {} [this should be equal to {}]'.format(len(docs_dev), dev_dataset_size))
 
     if debug_mode:
         print('Removing empty documents...')
     
     docs_train = _remove_empty_documents(docs_train)
     docs_test = _remove_empty_documents(docs_test)
-    docs_dev = _remove_empty_documents(docs_dev)
 
     # Remove test documents with length=1
     docs_test = [doc for doc in docs_test if len(doc)>1]
 
-    # Obtains the training, test and validation datasets as word lists
+    # Obtains the training and test datasets as word lists
     words_train = [[id2word[w] for w in doc] for doc in docs_train]
     words_test = [[id2word[w] for w in doc] for doc in docs_test]
-    words_dev = [[id2word[w] for w in doc] for doc in docs_dev]
 
     docs_test_h1 = [[w for i,w in enumerate(doc) if i<=len(doc)/2.0-1] for doc in docs_test]
     docs_test_h2 = [[w for i,w in enumerate(doc) if i>len(doc)/2.0-1] for doc in docs_test]
@@ -117,46 +112,39 @@ def create_etm_datasets(dataset, train_size = 1.0, test_size = 0.0, min_df = 1, 
     words_test = _create_list_words(docs_test)
     words_ts_h1 = _create_list_words(docs_test_h1)
     words_ts_h2 = _create_list_words(docs_test_h2)
-    words_dev = _create_list_words(docs_dev)
 
     if debug_mode:
         print('  len(words_train): ', len(words_train))
         print('  len(words_test): ', len(words_test))
         print('  len(words_ts_h1): ', len(words_ts_h1))
         print('  len(words_ts_h2): ', len(words_ts_h2))
-        print('  len(words_dev): ', len(words_dev))
 
     doc_indices_train = _create_document_indices(docs_train)
     doc_indices_test = _create_document_indices(docs_test)
     doc_indices_test_h1 = _create_document_indices(docs_test_h1)
     doc_indices_test_h2 = _create_document_indices(docs_test_h2)
-    doc_indices_dev = _create_document_indices(docs_dev)
 
     if debug_mode:
         print('  len(np.unique(doc_indices_train)): {} [this should be {}]'.format(len(np.unique(doc_indices_train)), len(docs_train)))
         print('  len(np.unique(doc_indices_test)): {} [this should be {}]'.format(len(np.unique(doc_indices_test)), len(docs_test)))
         print('  len(np.unique(doc_indices_test_h1)): {} [this should be {}]'.format(len(np.unique(doc_indices_test_h1)), len(docs_test_h1)))
         print('  len(np.unique(doc_indices_test_h2)): {} [this should be {}]'.format(len(np.unique(doc_indices_test_h2)), len(docs_test_h2)))
-        print('  len(np.unique(doc_indices_dev)): {} [this should be {}]'.format(len(np.unique(doc_indices_dev)), len(docs_dev)))
 
     # Number of documents in each set
     n_docs_train = len(docs_train)
     n_docs_test = len(docs_test)
     n_docs_test_h1 = len(docs_test_h1)
     n_docs_test_h2 = len(docs_test_h2)
-    n_docs_dev = len(docs_dev)
 
     bow_train = _create_bow(doc_indices_train, words_train, n_docs_train, len(vocabulary))
     bow_test = _create_bow(doc_indices_test, words_test, n_docs_test, len(vocabulary))
     bow_test_h1 = _create_bow(doc_indices_test_h1, words_ts_h1, n_docs_test_h1, len(vocabulary))
     bow_test_h2 = _create_bow(doc_indices_test_h2, words_ts_h2, n_docs_test_h2, len(vocabulary))
-    bow_dev = _create_bow(doc_indices_dev, words_dev, n_docs_dev, len(vocabulary))
 
     bow_train_tokens, bow_train_counts = _split_bow(bow_train, n_docs_train)
     bow_test_tokens, bow_test_counts = _split_bow(bow_test, n_docs_test)
     bow_test_h1_tokens, bow_test_h1_counts = _split_bow(bow_test_h1, n_docs_test_h1)
     bow_test_h2_tokens, bow_test_h2_counts = _split_bow(bow_test_h2, n_docs_test_h2)
-    bow_dev_tokens, bow_dev_counts = _split_bow(bow_dev, n_docs_dev)
 
     train_dataset = {
         'tokens': _to_numpy_array(bow_train_tokens),
@@ -178,9 +166,4 @@ def create_etm_datasets(dataset, train_size = 1.0, test_size = 0.0, min_df = 1, 
         }
     }
 
-    dev_dataset = {
-        'tokens': _to_numpy_array(bow_dev_tokens),
-        'counts': _to_numpy_array(bow_dev_counts),
-    }
-
-    return vocabulary, train_dataset, test_dataset, dev_dataset
+    return vocabulary, train_dataset, test_dataset
