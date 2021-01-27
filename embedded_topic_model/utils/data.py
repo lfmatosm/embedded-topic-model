@@ -1,8 +1,7 @@
 import os
-import random
 import pickle
 import numpy as np
-import torch 
+import torch
 import scipy.io
 
 
@@ -27,9 +26,9 @@ def _fetch(path, name):
         counts_1 = scipy.io.loadmat(count_1_file)['counts'].squeeze()
         tokens_2 = scipy.io.loadmat(token_2_file)['tokens'].squeeze()
         counts_2 = scipy.io.loadmat(count_2_file)['counts'].squeeze()
-        return {'tokens': tokens, 'counts': counts, 
-                    'tokens_1': tokens_1, 'counts_1': counts_1, 
-                        'tokens_2': tokens_2, 'counts_2': counts_2}
+        return {'tokens': tokens, 'counts': counts,
+                'tokens_1': tokens_1, 'counts_1': counts_1,
+                'tokens_2': tokens_2, 'counts_2': counts_2}
     return {'tokens': tokens, 'counts': counts}
 
 
@@ -52,7 +51,7 @@ def get_batch(tokens, counts, ind, vocab_size, device, emsize=300):
     for i, doc_id in enumerate(ind):
         doc = tokens[doc_id]
         count = counts[doc_id]
-        if len(doc) == 1: 
+        if len(doc) == 1:
             doc = [doc.squeeze()]
             count = [count.squeeze()]
         else:

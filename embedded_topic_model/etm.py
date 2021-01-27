@@ -1,19 +1,11 @@
-#/usr/bin/python
-
 from __future__ import print_function
 
 import torch
-import pickle 
-import numpy as np 
-import os 
-import math 
-import random 
-import sys
-import joblib
-import scipy.io
+import numpy as np
+import os
+import math
 
-from torch import nn, optim
-from torch.nn import functional as F
+from torch import optim
 
 from embedded_topic_model.model import Model
 from embedded_topic_model.utils import data
@@ -52,12 +44,36 @@ class ETM(object):
         eval_perplexity (bool): whether to compute perplexity on document completion task
         debug_mode (bool): wheter or not should log model operations
     """
-    def __init__(self, vocabulary, embeddings=None, model_path=None,
-        batch_size=1000, num_topics=50, rho_size=300, emb_size=300, t_hidden_size=800,
-        theta_act='relu', train_embeddings=False, lr=0.005, lr_factor=4.0, epochs=20,
-        optimizer_type='adam', seed=2019, enc_drop=0.0, clip=0.0,
-        nonmono=10, wdecay=1.2e-6, anneal_lr=False, bow_norm=True, num_words=10,
-        log_interval=2, visualize_every=10, eval_batch_size=1000, eval_perplexity=False, debug_mode=True,
+
+    def __init__(
+        self,
+        vocabulary,
+        embeddings=None,
+        model_path=None,
+        batch_size=1000,
+        num_topics=50,
+        rho_size=300,
+        emb_size=300,
+        t_hidden_size=800,
+        theta_act='relu',
+        train_embeddings=False,
+        lr=0.005,
+        lr_factor=4.0,
+        epochs=20,
+        optimizer_type='adam',
+        seed=2019,
+        enc_drop=0.0,
+        clip=0.0,
+        nonmono=10,
+        wdecay=1.2e-6,
+        anneal_lr=False,
+        bow_norm=True,
+        num_words=10,
+        log_interval=2,
+        visualize_every=10,
+        eval_batch_size=1000,
+        eval_perplexity=False,
+        debug_mode=True,
     ):
         self.vocabulary = vocabulary
         self.vocabulary_size = len(self.vocabulary)
@@ -82,70 +98,95 @@ class ETM(object):
         self.eval_batch_size = eval_batch_size
         self.eval_perplexity = eval_perplexity
         self.debug_mode = debug_mode
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu')
 
         np.random.seed(self.seed)
         torch.manual_seed(self.seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed(self.seed)
 
-        self.embeddings = None if train_embeddings else self._initialize_embeddings(embeddings)
+        self.embeddings = None if train_embeddings else self._initialize_embeddings(
+            embeddings)
 
-        self.model = Model(self.device, self.num_topics, self.vocabulary_size, self.t_hidden_size, self.rho_size, self.emb_size, 
-                        self.theta_act, self.embeddings, train_embeddings, self.enc_drop).to(self.device)
+        self.model = Model(
+            self.device,
+            self.num_topics,
+            self.vocabulary_size,
+            self.t_hidden_size,
+            self.rho_size,
+            self.emb_size,
+            self.theta_act,
+            self.embeddings,
+            train_embeddings,
+            self.enc_drop).to(
+            self.device)
         self.optimizer = self._get_optimizer(optimizer_type, lr, wdecay)
-    
 
     def __str__(self):
         return f'{self.model}'
-    
 
     def _initialize_embeddings(self, embeddings):
         vectors = embeddings if isinstance(embeddings, dict) else {}
 
         if isinstance(embeddings, str):
-            with open(embeddings, 'rb') as f:
-                for l in f:
-                    line = l.decode().split()
+            with open(embeddings, 'rb') as file:
+                for raw_line in file:
+                    line = raw_line.decode().split()
                     word = line[0]
                     if word in self.vocabulary:
                         vect = np.array(line[1:]).astype(np.float)
                         vectors[word] = vect
-        
+
         model_embeddings = np.zeros((self.vocabulary_size, self.emb_size))
 
         words_found = 0
         for i, word in enumerate(self.vocabulary):
-            try: 
+            try:
                 model_embeddings[i] = vectors[word]
                 words_found += 1
             except KeyError:
-                model_embeddings[i] = np.random.normal(scale=0.6, size=(self.emb_size, ))
+                model_embeddings[i] = np.random.normal(
+                    scale=0.6, size=(self.emb_size, ))
         return torch.from_numpy(model_embeddings).to(self.device)
-
 
     def _get_optimizer(self, optimizer_type, learning_rate, wdecay):
         if optimizer_type == 'adam':
-            return optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=wdecay)
+            return optim.Adam(
+                self.model.parameters(),
+                lr=learning_rate,
+                weight_decay=wdecay)
         elif optimizer_type == 'adagrad':
-            return optim.Adagrad(self.model.parameters(), lr=learning_rate, weight_decay=wdecay)
+            return optim.Adagrad(
+                self.model.parameters(),
+                lr=learning_rate,
+                weight_decay=wdecay)
         elif optimizer_type == 'adadelta':
-            return optim.Adadelta(self.model.parameters(), lr=learning_rate, weight_decay=wdecay)
+            return optim.Adadelta(
+                self.model.parameters(),
+                lr=learning_rate,
+                weight_decay=wdecay)
         elif optimizer_type == 'rmsprop':
-            return optim.RMSprop(self.model.parameters(), lr=learning_rate, weight_decay=wdecay)
+            return optim.RMSprop(
+                self.model.parameters(),
+                lr=learning_rate,
+                weight_decay=wdecay)
         elif optimizer_type == 'asgd':
-            return optim.ASGD(self.model.parameters(), lr=learning_rate, t0=0, lambd=0., weight_decay=wdecay)
+            return optim.ASGD(
+                self.model.parameters(),
+                lr=learning_rate,
+                t0=0,
+                lambd=0.,
+                weight_decay=wdecay)
         else:
             if self.debug_mode:
                 print('Defaulting to vanilla SGD')
             return optim.SGD(self.model.parameters(), lr=learning_rate)
 
-
     def _set_training_data(self, train_data):
         self.train_tokens = train_data['tokens']
         self.train_counts = train_data['counts']
         self.num_docs_train = len(self.train_tokens)
-    
 
     def _set_test_data(self, test_data):
         self.test_tokens = test_data['test']['tokens']
@@ -158,7 +199,6 @@ class ETM(object):
         self.test_2_counts = test_data['test2']['counts']
         self.num_docs_test_2 = len(self.test_2_tokens)
 
-
     def _train(self, epoch):
         self.model.train()
         acc_loss = 0
@@ -170,18 +210,25 @@ class ETM(object):
             self.optimizer.zero_grad()
             self.model.zero_grad()
 
-            data_batch = data.get_batch(self.train_tokens, self.train_counts, ind, self.vocabulary_size, self.device)
+            data_batch = data.get_batch(
+                self.train_tokens,
+                self.train_counts,
+                ind,
+                self.vocabulary_size,
+                self.device)
             sums = data_batch.sum(1).unsqueeze(1)
             if self.bow_norm:
                 normalized_data_batch = data_batch / sums
             else:
                 normalized_data_batch = data_batch
-            recon_loss, kld_theta = self.model(data_batch, normalized_data_batch)
+            recon_loss, kld_theta = self.model(
+                data_batch, normalized_data_batch)
             total_loss = recon_loss + kld_theta
             total_loss.backward()
 
             if self.clip > 0:
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.clip)
+                torch.nn.utils.clip_grad_norm_(
+                    self.model.parameters(), self.clip)
             self.optimizer.step()
 
             acc_loss += torch.sum(recon_loss).item()
@@ -189,22 +236,17 @@ class ETM(object):
             cnt += 1
 
             if idx % self.log_interval == 0 and idx > 0:
-                cur_loss = round(acc_loss / cnt, 2) 
-                cur_kl_theta = round(acc_kl_theta_loss / cnt, 2) 
+                cur_loss = round(acc_loss / cnt, 2)
+                cur_kl_theta = round(acc_kl_theta_loss / cnt, 2)
                 cur_real_loss = round(cur_loss + cur_kl_theta, 2)
 
-                if self.debug_mode:
-                    print('Epoch: {} .. batch: {}/{} .. LR: {} .. KL_theta: {} .. Rec_loss: {} .. NELBO: {}'.format(
-                        epoch, idx, len(indices), self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
-        
-        cur_loss = round(acc_loss / cnt, 2) 
-        cur_kl_theta = round(acc_kl_theta_loss / cnt, 2) 
+        cur_loss = round(acc_loss / cnt, 2)
+        cur_kl_theta = round(acc_kl_theta_loss / cnt, 2)
         cur_real_loss = round(cur_loss + cur_kl_theta, 2)
 
         if self.debug_mode:
-            print('Epoch----->{} .. LR: {} .. KL_theta: {} .. Rec_loss: {} .. NELBO: {}'.format(
-                    epoch, self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
-
+            print('Epoch {} - Learing Rate: {} - KL theta: {} - Rec loss: {} - NELBO: {}'.format(
+                epoch, self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
 
     def get_perplexity_for_document_completion(self, test_data):
         """Compute perplexity on document completion.
@@ -213,16 +255,25 @@ class ETM(object):
 
         self.model.eval()
         with torch.no_grad():
-            ## get \beta here
+            # get \beta here
             beta = self.model.get_beta()
 
-            ### do dc here
+            # do dc here
             acc_loss = 0
             cnt = 0
-            indices_1 = torch.split(torch.tensor(range(self.num_docs_test_1)), self.eval_batch_size)
+            indices_1 = torch.split(
+                torch.tensor(
+                    range(
+                        self.num_docs_test_1)),
+                self.eval_batch_size)
             for idx, ind in enumerate(indices_1):
-                ## get theta from first half of docs
-                data_batch_1 = data.get_batch(self.test_1_tokens, self.test_1_counts, ind, self.vocabulary_size, self.device)
+                # get theta from first half of docs
+                data_batch_1 = data.get_batch(
+                    self.test_1_tokens,
+                    self.test_1_counts,
+                    ind,
+                    self.vocabulary_size,
+                    self.device)
                 sums_1 = data_batch_1.sum(1).unsqueeze(1)
                 if self.bow_norm:
                     normalized_data_batch_1 = data_batch_1 / sums_1
@@ -230,64 +281,67 @@ class ETM(object):
                     normalized_data_batch_1 = data_batch_1
                 theta, _ = self.model.get_theta(normalized_data_batch_1)
 
-                ## get prediction loss using second half
-                data_batch_2 = data.get_batch(self.test_2_tokens, self.test_2_counts, ind, self.vocabulary_size, self.device)
+                # get prediction loss using second half
+                data_batch_2 = data.get_batch(
+                    self.test_2_tokens,
+                    self.test_2_counts,
+                    ind,
+                    self.vocabulary_size,
+                    self.device)
                 sums_2 = data_batch_2.sum(1).unsqueeze(1)
                 res = torch.mm(theta, beta)
                 preds = torch.log(res)
                 recon_loss = -(preds * data_batch_2).sum(1)
-                
+
                 loss = recon_loss / sums_2.squeeze()
                 loss = loss.mean().item()
                 acc_loss += loss
                 cnt += 1
-            
+
             cur_loss = acc_loss / cnt
             ppl_dc = round(math.exp(cur_loss), 1)
 
             if self.debug_mode:
-                print('{} Doc Completion PPL: {}'.format(source.upper(), ppl_dc))
-            
-            return ppl_dc
-    
+                print('Document Completion Task Perplexity: {}'.format(ppl_dc))
 
-    def get_topics(self, top_n_words = 10):
-        ## get topics using monte carlo
+            return ppl_dc
+
+    def get_topics(self, top_n_words=10):
+        # get topics using monte carlo
         with torch.no_grad():
             topics = []
             gammas = self.model.get_beta()
 
             for k in range(self.num_topics):
                 gamma = gammas[k]
-                top_words = list(gamma.cpu().numpy().argsort()[-top_n_words:][::-1])
+                top_words = list(gamma.cpu().numpy().argsort()
+                                 [-top_n_words:][::-1])
                 topic_words = [self.vocabulary[a] for a in top_words]
                 topics.append(topic_words)
-    
+
             return topics
-    
 
     def visualize_word_embeddings(self, queries):
         self.model.eval()
 
-        ## visualize word embeddings by using V to get nearest neighbors
+        # visualize word embeddings by using V to get nearest neighbors
         with torch.no_grad():
             try:
                 self.embeddings = self.model.rho.weight  # Vocab_size x E
-            except:
+            except BaseException:
                 self.embeddings = self.model.rho         # Vocab_size x E
-            
+
             neighbors = {}
             for word in queries:
-                neighbors[word] = metrics.nearest_neighbors(word, self.embeddings, self.vocabulary)
-            
+                neighbors[word] = metrics.nearest_neighbors(
+                    word, self.embeddings, self.vocabulary)
+
             return neighbors
 
-
-    def fit(self, train_data, test_data = None):
+    def fit(self, train_data, test_data=None):
         self._set_training_data(train_data)
 
-        ## train model on data 
-        best_epoch = 0
+        # train model on data
         best_val_ppl = 1e9
         all_val_ppls = []
 
@@ -298,30 +352,30 @@ class ETM(object):
             self._train(epoch)
 
             if self.eval_perplexity:
-                val_ppl = self.get_perplexity_for_document_completion(test_data)
+                val_ppl = self.get_perplexity_for_document_completion(
+                    test_data)
                 if val_ppl < best_val_ppl:
                     if self.model_path is not None:
                         self.save_model(self.model_path)
-                    best_epoch = epoch
                     best_val_ppl = val_ppl
                 else:
-                    ## check whether to anneal lr
+                    # check whether to anneal lr
                     lr = self.optimizer.param_groups[0]['lr']
-                    if self.anneal_lr and (len(all_val_ppls) > self.nonmono and val_ppl > min(all_val_ppls[:-self.nonmono]) and lr > 1e-5):
+                    if self.anneal_lr and (len(all_val_ppls) > self.nonmono and val_ppl > min(
+                            all_val_ppls[:-self.nonmono]) and lr > 1e-5):
                         self.optimizer.param_groups[0]['lr'] /= self.lr_factor
-            
+
                 all_val_ppls.append(val_ppl)
-            
+
             if self.debug_mode and (epoch % self.visualize_every == 0):
                 print(f'Topics: {self.get_topics()}')
-        
+
         if self.model_path is not None:
             self.save_model(self.model_path)
 
         if self.eval_perplexity and self.model_path is not None:
             self.load_model(self.model_path)
             val_ppl = self.get_perplexity_for_document_completion(train_data)
-
 
     def get_topic_word_matrix(self):
         self.model = self.model.to(self.device)
@@ -338,7 +392,6 @@ class ETM(object):
                 topics.append(topic_words)
 
             return topics
-    
 
     def get_topic_word_dist(self):
         self.model = self.model.to(self.device)
@@ -346,7 +399,6 @@ class ETM(object):
 
         with torch.no_grad():
             return self.model.get_beta()
-    
 
     def get_document_topic_dist(self):
         self.model = self.model.to(self.device)
@@ -359,7 +411,12 @@ class ETM(object):
             thetas = []
 
             for idx, ind in enumerate(indices):
-                data_batch = data.get_batch(self.train_tokens, self.train_counts, ind, self.vocabulary_size, self.device)
+                data_batch = data.get_batch(
+                    self.train_tokens,
+                    self.train_counts,
+                    ind,
+                    self.vocabulary_size,
+                    self.device)
                 sums = data_batch.sum(1).unsqueeze(1)
                 normalized_data_batch = data_batch / sums if self.bow_norm else data_batch
                 theta, _ = self.model.get_theta(normalized_data_batch)
@@ -368,17 +425,16 @@ class ETM(object):
 
             return torch.cat(tuple(thetas), 0)
 
-
-    def get_topic_coherence(self, top_n = 10):
+    def get_topic_coherence(self, top_n=10):
         self.model = self.model.to(self.device)
         self.model.eval()
 
         with torch.no_grad():
             beta = self.model.get_beta().data.cpu().numpy()
-            return metrics.get_topic_coherence(beta, self.train_tokens, self.vocabulary, top_n)
-    
+            return metrics.get_topic_coherence(
+                beta, self.train_tokens, self.vocabulary, top_n)
 
-    def get_topic_diversity(self, top_n = 25):
+    def get_topic_diversity(self, top_n=25):
         self.model = self.model.to(self.device)
         self.model.eval()
 
@@ -386,22 +442,20 @@ class ETM(object):
             beta = self.model.get_beta().data.cpu().numpy()
             return metrics.get_topic_diversity(beta, top_n)
 
-
     def save_model(self, model_path):
         assert self.model is not None, \
             'no model to save'
 
         if not os.path.exists(model_path):
             os.makedirs(os.path.dirname(model_path), exist_ok=True)
-        
+
         with open(model_path, 'wb') as file:
             torch.save(self.model, file)
-    
 
     def load_model(self, model_path):
         assert os.path.exists(model_path), \
             "model path doesn't exists"
-        
+
         with open(model_path, 'rb') as file:
             self.model = torch.load(file)
             self.model = self.model.to(self.device)

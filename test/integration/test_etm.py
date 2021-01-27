@@ -1,8 +1,5 @@
-import pytest
 import joblib
-
 from embedded_topic_model import etm
-from embedded_topic_model import utils
 
 
 class TestETM:
