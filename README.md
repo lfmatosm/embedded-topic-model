@@ -1,6 +1,7 @@
 # Embedded Topic Model
 [![Actions Status](https://github.com/lffloyd/embedded-topic-model/workflows/Python%20package/badge.svg)](https://github.com/lffloyd/embedded-topic-model/actions)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/lffloyd/embedded-topic-model/blob/main/LICENSE)
+
 This package was made to easily run embedded topic modelling on a given corpus.
 
 ETM is a topic model that marries the probabilistic topic modelling of Latent Dirichlet Allocation with the
