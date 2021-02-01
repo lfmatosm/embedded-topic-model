@@ -15,7 +15,8 @@ class Model(nn.Module):
             theta_act,
             embeddings=None,
             train_embeddings=True,
-            enc_drop=0.5):
+            enc_drop=0.5,
+            debug_mode=False):
         super(Model, self).__init__()
 
         # define hyperparameters
@@ -26,7 +27,7 @@ class Model(nn.Module):
         self.enc_drop = enc_drop
         self.emsize = emsize
         self.t_drop = nn.Dropout(enc_drop)
-
+        self.debug_mode = debug_mode
         self.theta_act = self.get_activation(theta_act)
 
         self.device = device
@@ -70,8 +71,9 @@ class Model(nn.Module):
         elif act == 'glu':
             act = nn.GLU()
         else:
-            print('Defaulting to tanh activations...')
             act = nn.Tanh()
+            if self.debug_mode:
+                print('Defaulting to tanh activation')
         return act
 
     def reparameterize(self, mu, logvar):
