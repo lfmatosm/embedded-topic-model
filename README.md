@@ -97,4 +97,4 @@ To cite ETM, use the original article's citation:
 Credits given to Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei for the original work.
 
 # License
-Licensed under [MIT](https://github.com/lffloyd/embedded-topic-model/LICENSE.md) license.
+Licensed under [MIT](https://github.com/lffloyd/embedded-topic-model/blob/main/LICENSE.md) license.
