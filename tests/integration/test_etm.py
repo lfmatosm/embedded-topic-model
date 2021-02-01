@@ -1,4 +1,4 @@
-from embedded_topic_model import etm
+from embedded_topic_model.models import etm
 import joblib
 import torch
 

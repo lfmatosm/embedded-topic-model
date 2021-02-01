@@ -7,7 +7,7 @@ import math
 from typing import List
 from torch import optim
 
-from embedded_topic_model.model import Model
+from embedded_topic_model.models.model import Model
 from embedded_topic_model.utils import data
 from embedded_topic_model.utils import metrics
 
