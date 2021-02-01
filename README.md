@@ -93,7 +93,7 @@ To cite ETM, use the original article's citation:
 ```
 
 # Acknowledgements
-All the credits are given to Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei for the original work.
+Credits given to Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei for the original work.
 
 # License
 Licensed under [MIT](LICENSE.md) license.
