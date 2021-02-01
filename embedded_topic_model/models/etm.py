@@ -392,7 +392,7 @@ class ETM(object):
                     test_data)
                 if val_ppl < best_val_ppl:
                     if self.model_path is not None:
-                        self.save_model(self.model_path)
+                        self._save_model(self.model_path)
                     best_val_ppl = val_ppl
                 else:
                     # check whether to anneal lr
@@ -407,10 +407,10 @@ class ETM(object):
                 print(f'Topics: {self.get_topics()}')
 
         if self.model_path is not None:
-            self.save_model(self.model_path)
+            self._save_model(self.model_path)
 
         if self.eval_perplexity and self.model_path is not None:
-            self.load_model(self.model_path)
+            self._load_model(self.model_path)
             val_ppl = self.perplexity(train_data)
 
         return self
@@ -550,7 +550,7 @@ class ETM(object):
             beta = self.model.get_beta().data.cpu().numpy()
             return metrics.get_topic_diversity(beta, top_n)
 
-    def save_model(self, model_path):
+    def _save_model(self, model_path):
         assert self.model is not None, \
             'no model to save'
 
@@ -560,7 +560,7 @@ class ETM(object):
         with open(model_path, 'wb') as file:
             torch.save(self.model, file)
 
-    def load_model(self, model_path):
+    def _load_model(self, model_path):
         assert os.path.exists(model_path), \
             "model path doesn't exists"
 
