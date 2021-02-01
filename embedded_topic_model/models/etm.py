@@ -4,10 +4,10 @@ import torch
 import numpy as np
 import os
 import math
-
+from typing import List
 from torch import optim
 
-from embedded_topic_model.model import Model
+from embedded_topic_model.models.model import Model
 from embedded_topic_model.utils import data
 from embedded_topic_model.utils import metrics
 
@@ -28,7 +28,7 @@ class ETM(object):
         train_embeddings (int): whether to fix rho or train it
         lr (float): learning rate
         lr_factor (float): divide learning rate by this...
-        epochs (int): number of epochs to train...150 for 20ng 100 for others
+        epochs (int): number of epochs to train. 150 for 20ng 100 for others
         optimizer_type (str): choice of optimizer
         seed (int): random seed (default: 1)
         enc_drop (float): dropout rate on encoder
@@ -119,7 +119,8 @@ class ETM(object):
             self.theta_act,
             self.embeddings,
             train_embeddings,
-            self.enc_drop).to(
+            self.enc_drop,
+            self.debug_mode).to(
             self.device)
         self.optimizer = self._get_optimizer(optimizer_type, lr, wdecay)
 
@@ -248,8 +249,18 @@ class ETM(object):
             print('Epoch {} - Learing Rate: {} - KL theta: {} - Rec loss: {} - NELBO: {}'.format(
                 epoch, self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
 
-    def get_perplexity_for_document_completion(self, test_data):
-        """Compute perplexity on document completion.
+    def _perplexity(self, test_data) -> float:
+        """Computes perplexity on document completion for a given testing data.
+
+        The document completion task is described on the original ETM's article: https://arxiv.org/pdf/1907.04907.pdf
+
+        Parameters:
+        ===
+            test_data (dict): BOW testing dataset, split in tokens and counts and used for perplexity
+
+        Returns:
+        ===
+            float: perplexity score on document completion task
         """
         self._set_test_data(test_data)
 
@@ -302,12 +313,23 @@ class ETM(object):
             ppl_dc = round(math.exp(cur_loss), 1)
 
             if self.debug_mode:
-                print('Document Completion Task Perplexity: {}'.format(ppl_dc))
+                print(f'Document Completion Task Perplexity: {ppl_dc}')
 
             return ppl_dc
 
-    def get_topics(self, top_n_words=10):
-        # get topics using monte carlo
+    def get_topics(self, top_n_words=10) -> List[str]:
+        """
+        Gets topics. By default, returns the 10 most relevant terms for each topic.
+
+        Parameters:
+        ===
+            top_n_words (int): number of top words per topic to return
+
+        Returns:
+        ===
+            list of str: topic list
+        """
+
         with torch.no_grad():
             topics = []
             gammas = self.model.get_beta()
@@ -321,7 +343,7 @@ class ETM(object):
 
             return topics
 
-    def visualize_word_embeddings(self, queries):
+    def _visualize_word_embeddings(self, queries):
         self.model.eval()
 
         # visualize word embeddings by using V to get nearest neighbors
@@ -339,9 +361,23 @@ class ETM(object):
             return neighbors
 
     def fit(self, train_data, test_data=None):
+        """
+        Trains the model with the given training data.
+
+        Optionally receives testing data for perplexity calculation. The testing data is
+        only used if the 'eval_perplexity' model parameter is True.
+
+        Parameters:
+        ===
+            train_data (dict): BOW training dataset, split in tokens and counts
+            test_data (dict): optional. BOW testing dataset, split in tokens and counts. Used for perplexity calculation, if activated
+
+        Returns:
+        ===
+            self (ETM): the instance itself
+        """
         self._set_training_data(train_data)
 
-        # train model on data
         best_val_ppl = 1e9
         all_val_ppls = []
 
@@ -352,11 +388,11 @@ class ETM(object):
             self._train(epoch)
 
             if self.eval_perplexity:
-                val_ppl = self.get_perplexity_for_document_completion(
+                val_ppl = self._perplexity(
                     test_data)
                 if val_ppl < best_val_ppl:
                     if self.model_path is not None:
-                        self.save_model(self.model_path)
+                        self._save_model(self.model_path)
                     best_val_ppl = val_ppl
                 else:
                     # check whether to anneal lr
@@ -371,13 +407,27 @@ class ETM(object):
                 print(f'Topics: {self.get_topics()}')
 
         if self.model_path is not None:
-            self.save_model(self.model_path)
+            self._save_model(self.model_path)
 
         if self.eval_perplexity and self.model_path is not None:
-            self.load_model(self.model_path)
-            val_ppl = self.get_perplexity_for_document_completion(train_data)
+            self._load_model(self.model_path)
+            val_ppl = self._perplexity(train_data)
 
-    def get_topic_word_matrix(self):
+        return self
+
+    def get_topic_word_matrix(self) -> List[List[str]]:
+        """
+        Obtains the topic-word matrix learned for the model.
+
+        The topic-word matrix lists all words for each discovered topic.
+        As such, this method will return a matrix representing the words.
+
+        Returns:
+        ===
+            list of list of str: topic-word matrix.
+            Example:
+                [['world', 'planet', 'stars', 'moon', 'astrophysics'], ...]
+        """
         self.model = self.model.to(self.device)
         self.model.eval()
 
@@ -393,14 +443,46 @@ class ETM(object):
 
             return topics
 
-    def get_topic_word_dist(self):
+    def get_topic_word_dist(self) -> torch.Tensor:
+        """
+        Obtains the topic-word distribution matrix.
+
+        The topic-word distribution matrix lists the probabilities for each word on each topic.
+
+        This is a normalized distribution matrix, and as such, each row sums to one.
+
+        Returns:
+        ===
+            torch.Tensor: topic-word distribution matrix, with KxV dimension, where
+            K is the number of topics and V is the vocabulary size
+            Example:
+                tensor([[3.2238e-04, 3.7851e-03, 3.2811e-04, ..., 8.4206e-05, 7.9504e-05,
+                4.0738e-04],
+                [3.6089e-05, 3.0677e-03, 1.3650e-04, ..., 4.5665e-05, 1.3241e-04,
+                5.8661e-05]])
+        """
         self.model = self.model.to(self.device)
         self.model.eval()
 
         with torch.no_grad():
             return self.model.get_beta()
 
-    def get_document_topic_dist(self):
+    def get_document_topic_dist(self) -> torch.Tensor:
+        """
+        Obtains the document-topic distribution matrix.
+
+        The document-topic distribution matrix lists the probabilities for each topic on each document.
+
+        This is a normalized distribution matrix, and as such, each row sums to one.
+
+        Returns:
+        ===
+            torch.Tensor: topic-word distribution matrix, with DxK dimension, where
+            D is the number of documents in the corpus and K is the number of topics
+            Example:
+                tensor([[0.1840, 0.0489, 0.1020, 0.0726, 0.1952, 0.1042, 0.1275, 0.1657],
+                [0.1417, 0.0918, 0.2263, 0.0840, 0.0900, 0.1635, 0.1209, 0.0817]])
+        """
         self.model = self.model.to(self.device)
         self.model.eval()
 
@@ -425,7 +507,20 @@ class ETM(object):
 
             return torch.cat(tuple(thetas), 0)
 
-    def get_topic_coherence(self, top_n=10):
+    def get_topic_coherence(self, top_n=10) -> float:
+        """
+        Calculates NPMI topic coherence for the model.
+
+        By default, considers the 10 most relevant terms for each topic in coherence computation.
+
+        Parameters:
+        ===
+            top_n (int): number of words per topic to consider in coherence computation
+
+        Returns:
+        ===
+            float: the model's topic coherence
+        """
         self.model = self.model.to(self.device)
         self.model.eval()
 
@@ -434,7 +529,20 @@ class ETM(object):
             return metrics.get_topic_coherence(
                 beta, self.train_tokens, self.vocabulary, top_n)
 
-    def get_topic_diversity(self, top_n=25):
+    def get_topic_diversity(self, top_n=25) -> float:
+        """
+        Calculates topic diversity for the model.
+
+        By default, considers the 25 most relevant terms for each topic in diversity computation.
+
+        Parameters:
+        ===
+            top_n (int): number of words per topic to consider in diversity computation
+
+        Returns:
+        ===
+            float: the model's topic diversity
+        """
         self.model = self.model.to(self.device)
         self.model.eval()
 
@@ -442,7 +550,7 @@ class ETM(object):
             beta = self.model.get_beta().data.cpu().numpy()
             return metrics.get_topic_diversity(beta, top_n)
 
-    def save_model(self, model_path):
+    def _save_model(self, model_path):
         assert self.model is not None, \
             'no model to save'
 
@@ -452,7 +560,7 @@ class ETM(object):
         with open(model_path, 'wb') as file:
             torch.save(self.model, file)
 
-    def load_model(self, model_path):
+    def _load_model(self, model_path):
         assert os.path.exists(model_path), \
             "model path doesn't exists"
 

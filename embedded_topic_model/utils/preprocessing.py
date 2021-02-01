@@ -1,6 +1,7 @@
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 from scipy import sparse
+from typing import Tuple, List
 
 
 def _remove_empty_documents(documents):
@@ -46,11 +47,34 @@ def _to_numpy_array(documents):
 
 
 def create_etm_datasets(
-        dataset,
+        dataset: List[str],
         train_size=1.0,
         min_df=1,
         max_df=100.0,
-        debug_mode=False):
+        debug_mode=False) -> Tuple[list, dict, dict]:
+    """
+    Creates vocabulary and train / test datasets from a given corpus. The vocabulary and datasets can
+    be used to train an ETM model.
+
+    By default, creates a train dataset with all the preprocessed documents in the corpus and an empty
+    test dataset.
+
+    This function preprocesses the given dataset, removing most and least frequent terms on the corpus - given minimum and maximum document-frequencies - and produces a BOW vocabulary.
+
+    Parameters:
+    ===
+        dataset (list of str): original corpus to be preprocessed. Is composed by a list of sentences
+        train_size (float): fraction of the original corpus to be used for the train dataset. By default, uses entire corpus
+        min_df (float): Minimum document-frequency for terms. Removes terms with a frequency below this threshold
+        max_df (float): Maximum document-frequency for terms. Removes terms with a frequency above this threshold
+        debug_mode (bool): Wheter or not to log function's operations to the console. By default, no logs are made
+
+    Returns:
+    ===
+        vocabulary (list of str): words vocabulary. Doesn't includes words not in the training dataset
+        train_dataset (dict): BOW training dataset, split in tokens and counts. Must be used on ETM's fit() method.
+        test_dataset (dict): BOW testing dataset, split in tokens and counts. Can be use on ETM's perplexity() method.
+    """
     vectorizer = CountVectorizer(min_df=min_df, max_df=max_df)
     vectorized_documents = vectorizer.fit_transform(dataset)
 
@@ -106,9 +130,9 @@ def create_etm_datasets(
     docs_train = [[word2id[w] for w in documents_without_stop_words[idx_permute[idx_d]]
                    if w in word2id] for idx_d in range(train_dataset_size)]
     docs_test = [
-        [word2id[w] for w in \
-            documents_without_stop_words[idx_permute[idx_d + train_dataset_size]] \
-                if w in word2id] for idx_d in range(test_dataset_size)]
+        [word2id[w] for w in
+            documents_without_stop_words[idx_permute[idx_d + train_dataset_size]]
+         if w in word2id] for idx_d in range(test_dataset_size)]
 
     if debug_mode:
         print(
@@ -144,10 +168,10 @@ def create_etm_datasets(
     words_ts_h2 = _create_list_words(docs_test_h2)
 
     if debug_mode:
-        print('  len(words_train): ', len(words_train))
-        print('  len(words_test): ', len(words_test))
-        print('  len(words_ts_h1): ', len(words_ts_h1))
-        print('  len(words_ts_h2): ', len(words_ts_h2))
+        print('len(words_train): ', len(words_train))
+        print('len(words_test): ', len(words_test))
+        print('len(words_ts_h1): ', len(words_ts_h1))
+        print('len(words_ts_h2): ', len(words_ts_h2))
 
     doc_indices_train = _create_document_indices(docs_train)
     doc_indices_test = _create_document_indices(docs_test)
@@ -155,13 +179,13 @@ def create_etm_datasets(
     doc_indices_test_h2 = _create_document_indices(docs_test_h2)
 
     if debug_mode:
-        print('  len(np.unique(doc_indices_train)): {} [this should be {}]'.format(
+        print('len(np.unique(doc_indices_train)): {} [this should be {}]'.format(
             len(np.unique(doc_indices_train)), len(docs_train)))
-        print('  len(np.unique(doc_indices_test)): {} [this should be {}]'.format(
+        print('len(np.unique(doc_indices_test)): {} [this should be {}]'.format(
             len(np.unique(doc_indices_test)), len(docs_test)))
-        print('  len(np.unique(doc_indices_test_h1)): {} [this should be {}]'.format(
+        print('len(np.unique(doc_indices_test_h1)): {} [this should be {}]'.format(
             len(np.unique(doc_indices_test_h1)), len(docs_test_h1)))
-        print('  len(np.unique(doc_indices_test_h2)): {} [this should be {}]'.format(
+        print('len(np.unique(doc_indices_test_h2)): {} [this should be {}]'.format(
             len(np.unique(doc_indices_test_h2)), len(docs_test_h2)))
 
     # Number of documents in each set

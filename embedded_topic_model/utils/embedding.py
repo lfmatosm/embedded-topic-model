@@ -15,7 +15,7 @@ class MemoryFriendlyFileIterator(object):
 def create_word2vec_embedding_from_dataset(
         dataset, dim_rho=300, min_count=1, sg=1,
         workers=25, negative_samples=10, window_size=4, iters=50,
-        embedding_file_path=None):
+        embedding_file_path=None) -> dict:
     """
     Creates a Word2Vec embedding from dataset file or a list of sentences.
     If a file path is given, the file must be composed
@@ -63,7 +63,7 @@ def create_word2vec_embedding_from_dataset(
     embeddings = {}
     for v in list(model.wv.vocab):
         vec = list(model.wv.__getitem__(v))
-        embeddings[v] = np.array(vec).astype(np.float)
+        embeddings[v] = np.array(vec).astype(np.float64)
 
     # Write the embeddings to a file
     if embedding_file_path is not None:
