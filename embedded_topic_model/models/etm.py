@@ -249,7 +249,7 @@ class ETM(object):
             print('Epoch {} - Learing Rate: {} - KL theta: {} - Rec loss: {} - NELBO: {}'.format(
                 epoch, self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
 
-    def perplexity(self, test_data) -> float:
+    def _perplexity(self, test_data) -> float:
         """Computes perplexity on document completion for a given testing data.
 
         The document completion task is described on the original ETM's article: https://arxiv.org/pdf/1907.04907.pdf
@@ -343,7 +343,7 @@ class ETM(object):
 
             return topics
 
-    def visualize_word_embeddings(self, queries):
+    def _visualize_word_embeddings(self, queries):
         self.model.eval()
 
         # visualize word embeddings by using V to get nearest neighbors
@@ -388,7 +388,7 @@ class ETM(object):
             self._train(epoch)
 
             if self.eval_perplexity:
-                val_ppl = self.perplexity(
+                val_ppl = self._perplexity(
                     test_data)
                 if val_ppl < best_val_ppl:
                     if self.model_path is not None:
@@ -411,7 +411,7 @@ class ETM(object):
 
         if self.eval_perplexity and self.model_path is not None:
             self._load_model(self.model_path)
-            val_ppl = self.perplexity(train_data)
+            val_ppl = self._perplexity(train_data)
 
         return self
 
