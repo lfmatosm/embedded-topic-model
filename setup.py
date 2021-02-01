@@ -21,6 +21,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     description='A package to run embedded topic modelling',
     install_requires=requirements,
