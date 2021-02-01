@@ -15,7 +15,7 @@ from embedded_topic_model.utils import metrics
 class ETM(object):
     """
     Creates an embedded topic model instance. The model hyperparameters are:
-    
+
         vocabulary (list of str): training dataset vocabulary
         embeddings (str or dict): directory containing word embeddings or dictionary containing word embeddings mapping
         model_path (str): path to save trained model. If None, the model won't be automatically saved
@@ -251,13 +251,13 @@ class ETM(object):
 
     def perplexity(self, test_data) -> float:
         """Computes perplexity on document completion for a given testing data.
-        
+
         The document completion task is described on the original ETM's article: https://arxiv.org/pdf/1907.04907.pdf
 
         Parameters:
         ===
             test_data (dict): BOW testing dataset, split in tokens and counts and used for perplexity
-        
+
         Returns:
         ===
             float: perplexity score on document completion task
@@ -324,12 +324,12 @@ class ETM(object):
         Parameters:
         ===
             top_n_words (int): number of top words per topic to return
-        
+
         Returns:
         ===
             list of str: topic list
         """
-        
+
         with torch.no_grad():
             topics = []
             gammas = self.model.get_beta()
@@ -362,8 +362,8 @@ class ETM(object):
 
     def fit(self, train_data, test_data=None):
         """
-        Trains the model with the given training data. 
-        
+        Trains the model with the given training data.
+
         Optionally receives testing data for perplexity calculation. The testing data is
         only used if the 'eval_perplexity' model parameter is True.
 
@@ -371,7 +371,7 @@ class ETM(object):
         ===
             train_data (dict): BOW training dataset, split in tokens and counts
             test_data (dict): optional. BOW testing dataset, split in tokens and counts. Used for perplexity calculation, if activated
-        
+
         Returns:
         ===
             self (ETM): the instance itself
@@ -412,7 +412,7 @@ class ETM(object):
         if self.eval_perplexity and self.model_path is not None:
             self.load_model(self.model_path)
             val_ppl = self.perplexity(train_data)
-        
+
         return self
 
     def get_topic_word_matrix(self) -> List[List[str]]:
@@ -421,7 +421,7 @@ class ETM(object):
 
         The topic-word matrix lists all words for each discovered topic.
         As such, this method will return a matrix representing the words.
-        
+
         Returns:
         ===
             list of list of str: topic-word matrix.
@@ -450,7 +450,7 @@ class ETM(object):
         The topic-word distribution matrix lists the probabilities for each word on each topic.
 
         This is a normalized distribution matrix, and as such, each row sums to one.
-        
+
         Returns:
         ===
             torch.Tensor: topic-word distribution matrix, with KxV dimension, where
@@ -474,7 +474,7 @@ class ETM(object):
         The document-topic distribution matrix lists the probabilities for each topic on each document.
 
         This is a normalized distribution matrix, and as such, each row sums to one.
-        
+
         Returns:
         ===
             torch.Tensor: topic-word distribution matrix, with DxK dimension, where
@@ -510,7 +510,7 @@ class ETM(object):
     def get_topic_coherence(self, top_n=10) -> float:
         """
         Calculates NPMI topic coherence for the model.
-        
+
         By default, considers the 10 most relevant terms for each topic in coherence computation.
 
         Parameters:

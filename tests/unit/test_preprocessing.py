@@ -18,12 +18,13 @@ def test_create_etm_datasets():
     no_documents_in_train = 7
     no_documents_in_test = 3
 
-    vocabulary, train_dataset, test_dataset = preprocessing.create_etm_datasets(documents, train_size=0.7)
+    vocabulary, train_dataset, test_dataset = preprocessing.create_etm_datasets(
+        documents, train_size=0.7)
 
     assert isinstance(vocabulary, list), "vocabulary isn't list"
 
-    assert len(train_dataset['tokens']) == no_documents_in_train and len(train_dataset['counts']) == no_documents_in_train, \
-        "lengths of tokens and counts for training dataset doesn't match"
+    assert len(train_dataset['tokens']) == no_documents_in_train and len(
+        train_dataset['counts']) == no_documents_in_train, "lengths of tokens and counts for training dataset doesn't match"
 
-    assert len(test_dataset['test']['tokens']) == no_documents_in_test and len(test_dataset['test']['counts']) == no_documents_in_test, \
-        "lengths of tokens and counts for testing dataset doesn't match"
+    assert len(test_dataset['test']['tokens']) == no_documents_in_test and len(
+        test_dataset['test']['counts']) == no_documents_in_test, "lengths of tokens and counts for testing dataset doesn't match"

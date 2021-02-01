@@ -15,11 +15,18 @@ sentences = [
     "Harrold felt confident that nobody would ever suspect his spy pigeon.",
     "Nudist colonies shun fig-leaf couture.",
 ]
-vocabulary, train_dataset, test_dataset = preprocessing.create_etm_datasets(sentences)
+vocabulary, train_dataset, test_dataset = preprocessing.create_etm_datasets(
+    sentences)
 
 embeddings = embedding.create_word2vec_embedding_from_dataset(sentences)
 
 os.makedirs(os.path.dirname('./train_resources.test'), exist_ok=True)
-joblib.dump((vocabulary, embeddings, train_dataset, test_dataset), './train_resources.test', compress=8)
+joblib.dump(
+    (vocabulary,
+     embeddings,
+     train_dataset,
+     test_dataset),
+    './train_resources.test',
+    compress=8)
 
 print('the end')

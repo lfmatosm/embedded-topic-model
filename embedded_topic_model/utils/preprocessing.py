@@ -53,10 +53,10 @@ def create_etm_datasets(
         max_df=100.0,
         debug_mode=False) -> Tuple[list, dict, dict]:
     """
-    Creates vocabulary and train / test datasets from a given corpus. The vocabulary and datasets can 
+    Creates vocabulary and train / test datasets from a given corpus. The vocabulary and datasets can
     be used to train an ETM model.
-    
-    By default, creates a train dataset with all the preprocessed documents in the corpus and an empty 
+
+    By default, creates a train dataset with all the preprocessed documents in the corpus and an empty
     test dataset.
 
     This function preprocesses the given dataset, removing most and least frequent terms on the corpus - given minimum and maximum document-frequencies - and produces a BOW vocabulary.
@@ -68,7 +68,7 @@ def create_etm_datasets(
         min_df (float): Minimum document-frequency for terms. Removes terms with a frequency below this threshold
         max_df (float): Maximum document-frequency for terms. Removes terms with a frequency above this threshold
         debug_mode (bool): Wheter or not to log function's operations to the console. By default, no logs are made
-    
+
     Returns:
     ===
         vocabulary (list of str): words vocabulary. Doesn't includes words not in the training dataset
@@ -130,9 +130,9 @@ def create_etm_datasets(
     docs_train = [[word2id[w] for w in documents_without_stop_words[idx_permute[idx_d]]
                    if w in word2id] for idx_d in range(train_dataset_size)]
     docs_test = [
-        [word2id[w] for w in \
-            documents_without_stop_words[idx_permute[idx_d + train_dataset_size]] \
-                if w in word2id] for idx_d in range(test_dataset_size)]
+        [word2id[w] for w in
+            documents_without_stop_words[idx_permute[idx_d + train_dataset_size]]
+         if w in word2id] for idx_d in range(test_dataset_size)]
 
     if debug_mode:
         print(

@@ -17,9 +17,11 @@ def test_create_word2vec_embedding_from_dataset():
     ]
 
     dimensionality = 240
-    embeddings = embedding.create_word2vec_embedding_from_dataset(documents, dim_rho=dimensionality)
+    embeddings = embedding.create_word2vec_embedding_from_dataset(
+        documents, dim_rho=dimensionality)
 
     assert isinstance(embeddings, dict), "embeddings isn't a dictionary"
 
     for word, vector in embeddings.items():
-        assert len(vector) == dimensionality, "lenght of {} vector doesn't match: exp = {}, result = {}".format(word, dimensionality, len(vector))
+        assert len(vector) == dimensionality, "lenght of {} vector doesn't match: exp = {}, result = {}".format(
+            word, dimensionality, len(vector))

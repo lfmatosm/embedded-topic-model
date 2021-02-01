@@ -18,11 +18,11 @@ def get_document_frequency(data, wi, wj=None):
         for document in data:
             # FIXME: 'if' for original article's code, 'else' for updated
             doc = document.squeeze(0) if document.shape[0] == 1 else document
-            
+
             if wi in doc:
                 D_wi += 1
         return D_wi
-    
+
     D_wj = 0
     D_wi_wj = 0
     for document in data:
@@ -57,7 +57,7 @@ def get_topic_coherence(beta, data, vocab, top_n=10):
                 if D_wi_wj == 0:
                     f_wi_wj = -1
                 else:
-                    f_wi_wj = -1 + (np.log(D_wi) + np.log(D_wj) - \
+                    f_wi_wj = -1 + (np.log(D_wi) + np.log(D_wj) -
                                     2.0 * np.log(D)) / (np.log(D_wi_wj) - np.log(D))
                 # update tmp:
                 tmp += f_wi_wj
