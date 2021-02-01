@@ -5,7 +5,7 @@ import torch
 
 class TestETM:
     def test_etm_training_with_preprocessed_dummy_dataset(self):
-        vocabulary, embeddings, train_dataset, _ = joblib.load('test/resources/train_resources.test')
+        vocabulary, embeddings, train_dataset, _ = joblib.load('tests/resources/train_resources.test')
 
         etm_instance = etm.ETM(
             vocabulary,
@@ -44,7 +44,7 @@ class TestETM:
         
         t_w_dist = etm_instance.get_topic_word_dist()
         assert len(t_w_dist) == expected_no_topics, \
-            "no. of topics in topic-word distribution error: exp = {}, result = {}".format(expected_no_topics, len(t_w_dist))
+            "topic-word distribution error: exp = {}, result = {}".format(expected_no_topics, len(t_w_dist))
         
         t_w_dist_below_zero_elems = t_w_dist[t_w_dist < 0]
         assert len(t_w_dist_below_zero_elems) == 0, \
@@ -56,7 +56,7 @@ class TestETM:
         
         d_t_dist = etm_instance.get_document_topic_dist()
         assert len(d_t_dist) == expected_no_documents, \
-            "no. of topics in document-topic distribution error: exp = {}, result = {}".format(expected_no_documents, len(d_t_dist))
+            "document-topics distribution error: exp = {}, result = {}".format(expected_no_documents, len(d_t_dist))
 
         d_t_dist_below_zero_elems = d_t_dist[d_t_dist < 0]
         assert len(d_t_dist_below_zero_elems) == 0, \
