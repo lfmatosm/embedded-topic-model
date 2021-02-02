@@ -15,11 +15,12 @@ with open('dev_requirements.txt') as f:
 setup(
     author='Luiz F. Matos',
     author_email='lfmatosmelo@id.uff.br',
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
@@ -36,6 +37,6 @@ setup(
     test_suite='tests',
     tests_require=dev_requirements,
     url='https://github.com/lffloyd/embedded-topic-model',
-    version='0.1.0',
+    version='0.1.1',
     zip_safe=False,
 )
