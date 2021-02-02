@@ -2,6 +2,12 @@
 
 This changelog was inspired by the [keep-a-changelog](https://github.com/olivierlacan/keep-a-changelog) project and follows [semantic versioning](https://semver.org).
 
+## [0.1.1] - 2021-02-01
+
+### Added
+
+- support for python 3.6
+
 ## [0.1.0] - 2021-02-01
 
 ### Added
