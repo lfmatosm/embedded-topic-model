@@ -1,4 +1,5 @@
 # Embedded Topic Model
+[![PyPI version](https://badge.fury.io/py/embedded-topic-model.svg)](https://badge.fury.io/py/embedded-topic-model)
 [![Actions Status](https://github.com/lffloyd/embedded-topic-model/workflows/Python%20package/badge.svg)](https://github.com/lffloyd/embedded-topic-model/actions)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/lffloyd/embedded-topic-model/blob/main/LICENSE)
 
