@@ -106,7 +106,6 @@ def create_etm_datasets(
     # Creates vocabulary
     vocabulary = [id2word[idx_sort[cc]] for cc in range(v_size)]
 
-    # Split in train/test
     if debug_mode:
         print('Tokenizing documents and splitting into train/test...')
 

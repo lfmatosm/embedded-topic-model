@@ -1,5 +1,4 @@
-import gensim
-import numpy as np
+from gensim.models import Word2Vec, KeyedVectors
 
 
 # Class for a memory-friendly iterator over the dataset
@@ -15,7 +14,7 @@ class MemoryFriendlyFileIterator(object):
 def create_word2vec_embedding_from_dataset(
         dataset, dim_rho=300, min_count=1, sg=1,
         workers=25, negative_samples=10, window_size=4, iters=50,
-        embedding_file_path=None) -> dict:
+        embedding_file_path=None, save_c_format_w2vec=False, debug_mode=False) -> KeyedVectors:
     """
     Creates a Word2Vec embedding from dataset file or a list of sentences.
     If a file path is given, the file must be composed
@@ -34,10 +33,12 @@ def create_word2vec_embedding_from_dataset(
         window_size (int): window size to determine context
         iters (int): number of iterations
         embedding_file_path (str): optional. File to save the word embeddings
+        save_c_format_w2vec (bool): wheter to save embeddings as word2vec C format (BIN and TXT files)
+        debug_mode (bool): wheter or not to log function's operations to the console. By default, no logs are made
 
     Returns:
     ===
-        dict: dictionary containing the mapping between words and their vector representations.
+        Word2VecKeyedVectors: mapping between words and their vector representations.
         Example:
             { 'water': nd.array([0.024187922, 0.053684134, 0.034520667, ... ]) }
     """
@@ -48,9 +49,20 @@ def create_word2vec_embedding_from_dataset(
         assert isinstance(embedding_file_path, str), \
             'if dataset is a file path, an output embeddings file path must be given'
 
+    if save_c_format_w2vec:
+        assert isinstance(embedding_file_path, str), \
+            'if save_c_format_w2vec is True, an output embeddings file path must be given'
+
+    if debug_mode:
+        print('Creating memory-friendly iterator...')
+
     sentences = MemoryFriendlyFileIterator(dataset) if isinstance(
         dataset, str) else [document.split() for document in dataset]
-    model = gensim.models.Word2Vec(
+
+    if debug_mode:
+        print('Training Word2Vec model with dataset...')
+
+    model = Word2Vec(
         sentences,
         min_count=min_count,
         sg=sg,
@@ -60,16 +72,21 @@ def create_word2vec_embedding_from_dataset(
         negative=negative_samples,
         window=window_size)
 
-    embeddings = {}
-    for v in list(model.wv.vocab):
-        vec = list(model.wv.__getitem__(v))
-        embeddings[v] = np.array(vec).astype(np.float64)
+    embeddings = model.wv
 
-    # Write the embeddings to a file
     if embedding_file_path is not None:
-        with open(embedding_file_path, 'w') as f:
-            for word, vector in embeddings.items():
-                vector_str = ['%.9f' % val for val in list(vector)]
-                f.write(f'{word} {" ".join(vector_str)}\n')
+        if debug_mode:
+            print('Saving word-vector mappings to file...')
+
+        embeddings.save(embedding_file_path)
+
+    if save_c_format_w2vec:
+        if debug_mode:
+            print('Saving BIN/TXT original C Word2vec files...')
+
+        embeddings.save_word2vec_format(
+            f'{embedding_file_path}.bin', binary=True)
+        embeddings.save_word2vec_format(
+            f'{embedding_file_path}.txt', binary=False)
 
     return embeddings

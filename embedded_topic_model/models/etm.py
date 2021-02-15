@@ -6,6 +6,7 @@ import os
 import math
 from typing import List
 from torch import optim
+from gensim.models import KeyedVectors
 
 from embedded_topic_model.models.model import Model
 from embedded_topic_model.utils import data
@@ -17,7 +18,8 @@ class ETM(object):
     Creates an embedded topic model instance. The model hyperparameters are:
 
         vocabulary (list of str): training dataset vocabulary
-        embeddings (str or dict): directory containing word embeddings or dictionary containing word embeddings mapping
+        embeddings (str or KeyedVectors): KeyedVectors instance containing word-vector mapping for embeddings, or its path
+        use_c_format_w2vec (bool): wheter input embeddings use word2vec C format. Both BIN and TXT formats are supported
         model_path (str): path to save trained model. If None, the model won't be automatically saved
         batch_size (int): input batch size for training
         num_topics (int): number of topics
@@ -49,6 +51,7 @@ class ETM(object):
         self,
         vocabulary,
         embeddings=None,
+        use_c_format_w2vec=False,
         model_path=None,
         batch_size=1000,
         num_topics=50,
@@ -107,7 +110,7 @@ class ETM(object):
             torch.cuda.manual_seed(self.seed)
 
         self.embeddings = None if train_embeddings else self._initialize_embeddings(
-            embeddings)
+            embeddings, use_c_format_w2vec)
 
         self.model = Model(
             self.device,
@@ -127,17 +130,21 @@ class ETM(object):
     def __str__(self):
         return f'{self.model}'
 
-    def _initialize_embeddings(self, embeddings):
-        vectors = embeddings if isinstance(embeddings, dict) else {}
+    def _get_extension(self, path):
+        assert isinstance(path, str), 'path extension is not str'
+        filename = path.split(os.path.sep)[-1]
+        return filename.split('.')[-1]
 
-        if isinstance(embeddings, str):
-            with open(embeddings, 'rb') as file:
-                for raw_line in file:
-                    line = raw_line.decode().split()
-                    word = line[0]
-                    if word in self.vocabulary:
-                        vect = np.array(line[1:]).astype(np.float)
-                        vectors[word] = vect
+    def _initialize_embeddings(self, embeddings, use_c_format_w2vec=False):
+        vectors = embeddings if isinstance(embeddings, KeyedVectors) else {}
+
+        if use_c_format_w2vec:
+            vectors = KeyedVectors.load_word2vec_format(
+                embeddings, 
+                binary=False if self._get_extension(embeddings) == 'txt' else True
+            )
+        elif isinstance(embeddings, str):
+            vectors = KeyedVectors.load(embeddings, mmap='r')
 
         model_embeddings = np.zeros((self.vocabulary_size, self.emb_size))
 
@@ -246,7 +253,7 @@ class ETM(object):
         cur_real_loss = round(cur_loss + cur_kl_theta, 2)
 
         if self.debug_mode:
-            print('Epoch {} - Learing Rate: {} - KL theta: {} - Rec loss: {} - NELBO: {}'.format(
+            print('Epoch {} - Learning Rate: {} - KL theta: {} - Rec loss: {} - NELBO: {}'.format(
                 epoch, self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
 
     def _perplexity(self, test_data) -> float:

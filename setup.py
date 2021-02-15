@@ -27,7 +27,7 @@ setup(
     description='A package to run embedded topic modelling',
     install_requires=requirements,
     license='MIT license',
-    long_description=readme + '<br><br>' + changelog,
+    long_description=readme + changelog,
     long_description_content_type='text/markdown',
     include_package_data=True,
     keywords='embedded_topic_model',
@@ -37,6 +37,6 @@ setup(
     test_suite='tests',
     tests_require=dev_requirements,
     url='https://github.com/lffloyd/embedded-topic-model',
-    version='0.1.1',
+    version='1.0.0',
     zip_safe=False,
 )
