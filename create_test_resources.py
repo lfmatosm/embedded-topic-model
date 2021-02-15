@@ -1,7 +1,6 @@
 from embedded_topic_model.utils import embedding, preprocessing
-import joblib
 import os
-
+import joblib
 
 sentences = [
     "Peanut butter and jelly caused the elderly lady to think about her past.",
@@ -16,11 +15,16 @@ sentences = [
     "Nudist colonies shun fig-leaf couture.",
 ]
 vocabulary, train_dataset, test_dataset = preprocessing.create_etm_datasets(
-    sentences)
+    sentences, debug_mode=True)
 
-embeddings = embedding.create_word2vec_embedding_from_dataset(sentences)
+embeddings = embedding.create_word2vec_embedding_from_dataset(
+    sentences, 
+    embedding_file_path='tests/resources/train_w2v_embeddings.wordvectors', 
+    save_c_format_w2vec=True,
+    debug_mode=True,
+)
 
-os.makedirs(os.path.dirname('./train_resources.test'), exist_ok=True)
+os.makedirs(os.path.dirname('tests/resources/train_resources.test'), exist_ok=True)
 joblib.dump(
     (vocabulary,
      embeddings,

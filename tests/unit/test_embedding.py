@@ -1,5 +1,5 @@
 from embedded_topic_model.utils import embedding
-import numpy as np
+from gensim.models import KeyedVectors
 
 
 def test_create_word2vec_embedding_from_dataset():
@@ -20,8 +20,10 @@ def test_create_word2vec_embedding_from_dataset():
     embeddings = embedding.create_word2vec_embedding_from_dataset(
         documents, dim_rho=dimensionality)
 
-    assert isinstance(embeddings, dict), "embeddings isn't a dictionary"
+    assert isinstance(
+        embeddings, KeyedVectors), "embeddings isn't KeyedVectors instance"
 
-    for word, vector in embeddings.items():
-        assert len(vector) == dimensionality, "lenght of {} vector doesn't match: exp = {}, result = {}".format(
-            word, dimensionality, len(vector))
+    vector = embeddings['Peanut']
+
+    assert len(vector) == dimensionality, "lenght of 'Peanut' vector doesn't match: exp = {}, result = {}".format(
+        dimensionality, len(vector))

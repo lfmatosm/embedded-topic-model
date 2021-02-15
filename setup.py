@@ -27,7 +27,7 @@ setup(
     description='A package to run embedded topic modelling',
     install_requires=requirements,
     license='MIT license',
-    long_description=readme + '<br><br>' + changelog,
+    long_description=readme + changelog,
     long_description_content_type='text/markdown',
     include_package_data=True,
     keywords='embedded_topic_model',
