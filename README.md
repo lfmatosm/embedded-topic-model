@@ -53,7 +53,7 @@ To pretrain the embeddings, you can do the following:
 from embedded_topic_model.utils import embedding
 
 # Training word2vec embeddings
-embeddings_dictionary = embedding.create_word2vec_embedding_from_dataset(documents)
+embeddings_mapping = embedding.create_word2vec_embedding_from_dataset(documents)
 ```
 
 To create and fit the model using the training data, execute:
@@ -64,11 +64,14 @@ from embedded_topic_model.models.etm import ETM
 # Training an ETM instance
 etm_instance = ETM(
     vocabulary,
-    embeddings=embeddings_dictionary, # You can pass here the path to a word2vec file or an embeddings dictionary
+    embeddings=embeddings_mapping, # You can pass here the path to a word2vec file or
+                                   # a KeyedVectors instance
     num_topics=8,
     epochs=300,
     debug_mode=True,
-    train_embeddings=False, # Optional. If True, ETM will learn word embeddings jointly with topic embeddings
+    train_embeddings=False, # Optional. If True, ETM will learn word embeddings jointly with
+                            # topic embeddings. By default, is False. If 'embeddings' argument
+                            # is being passed, this argument must not be True
 )
 
 etm_instance.fit(train_dataset)
