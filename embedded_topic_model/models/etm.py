@@ -10,6 +10,7 @@ from gensim.models import KeyedVectors
 
 from embedded_topic_model.models.model import Model
 from embedded_topic_model.utils import data
+from embedded_topic_model.utils import embedding
 from embedded_topic_model.utils import metrics
 
 
@@ -110,7 +111,7 @@ class ETM(object):
             torch.cuda.manual_seed(self.seed)
 
         self.embeddings = None if train_embeddings else self._initialize_embeddings(
-            embeddings, use_c_format_w2vec)
+            embeddings, use_c_format_w2vec=use_c_format_w2vec)
 
         self.model = Model(
             self.device,
@@ -135,24 +136,47 @@ class ETM(object):
         filename = path.split(os.path.sep)[-1]
         return filename.split('.')[-1]
 
-    def _initialize_embeddings(self, embeddings, use_c_format_w2vec=False):
+    def _get_embeddings_from_original_word2vec(self, embeddings_file):
+        if self._get_extension(embeddings_file) == 'txt':
+            if self.debug_mode:
+                print('Reading embeddings from original word2vec TXT file...')
+            vectors = {}
+            iterator = embedding.MemoryFriendlyFileIterator(embeddings_file)
+            for line in iterator:
+                word = line[0]
+                if word in self.vocabulary:
+                    vect = np.array(line[1:]).astype(np.float)
+                    vectors[word] = vect
+            return vectors
+        elif self._get_extension(embeddings_file) == 'bin':
+            if self.debug_mode:
+                print('Reading embeddings from original word2vec BIN file...')
+            return KeyedVectors.load_word2vec_format(
+                embeddings_file, 
+                binary=True
+            )
+        else:
+            raise Exception('Original Word2Vec file without BIN/TXT extension')
+
+    def _initialize_embeddings(
+        self, 
+        embeddings,
+        use_c_format_w2vec=False
+    ):
         vectors = embeddings if isinstance(embeddings, KeyedVectors) else {}
 
         if use_c_format_w2vec:
-            vectors = KeyedVectors.load_word2vec_format(
-                embeddings, 
-                binary=False if self._get_extension(embeddings) == 'txt' else True
-            )
+            vectors = self._get_embeddings_from_original_word2vec(embeddings)
         elif isinstance(embeddings, str):
+            if self.debug_mode:
+                print('Reading embeddings from word2vec file...')
             vectors = KeyedVectors.load(embeddings, mmap='r')
 
         model_embeddings = np.zeros((self.vocabulary_size, self.emb_size))
 
-        words_found = 0
         for i, word in enumerate(self.vocabulary):
             try:
                 model_embeddings[i] = vectors[word]
-                words_found += 1
             except KeyError:
                 model_embeddings[i] = np.random.normal(
                     scale=0.6, size=(self.emb_size, ))
