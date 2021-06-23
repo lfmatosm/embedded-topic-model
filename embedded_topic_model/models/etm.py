@@ -376,7 +376,7 @@ class ETM(object):
 
     def get_most_similar_words(self, queries, n_most_similar=20) -> dict:
         """
-        Gets the nearest neighboorhoring words for a list of tokens. By default, returns the 20 most similar words for each token in 'queries' array.
+        Gets the nearest neighborhoring words for a list of tokens. By default, returns the 20 most similar words for each token in 'queries' array.
 
         Parameters:
         ===
