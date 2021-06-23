@@ -2,6 +2,13 @@
 
 This changelog was inspired by the [keep-a-changelog](https://github.com/olivierlacan/keep-a-changelog) project and follows [semantic versioning](https://semver.org).
 
+## [1.0.2] - 2021-06-23
+
+### Changed
+
+- deactivates debug mode by default
+- documents get_most_similar_words method
+
 ## [1.0.1] - 2021-02-15
 
 ### Changed

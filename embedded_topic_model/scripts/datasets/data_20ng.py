@@ -2,10 +2,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.datasets import fetch_20newsgroups
 import numpy as np
 import pickle
-import random
 from scipy import sparse
-import itertools
-from scipy.io import savemat, loadmat
+from scipy.io import savemat
 import re
 import string
 import os

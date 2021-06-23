@@ -52,7 +52,7 @@ class TestETM:
             "get_most_similar_words error: expected {} keys but {} were returned for method call".format(3, len(similar_words))
         for key in similar_words.keys():
             assert 0 <= len(similar_words[key]) <= 5, \
-                "get_most_similar_words error: expected <= {} elements but got {} for {} key".format(5, len(similar_words[key], key))
+                "get_most_similar_words error: expected <= {} elements but got {} for {} key".format(5, len(similar_words[key]), key)
 
 
         t_w_dist_below_zero_elems = t_w_dist[t_w_dist < 0]
