@@ -77,7 +77,7 @@ class ETM(object):
         visualize_every=10,
         eval_batch_size=1000,
         eval_perplexity=False,
-        debug_mode=True,
+        debug_mode=False,
     ):
         self.vocabulary = vocabulary
         self.vocabulary_size = len(self.vocabulary)
@@ -374,7 +374,20 @@ class ETM(object):
 
             return topics
 
-    def _visualize_word_embeddings(self, queries):
+    def get_most_similar_words(self, queries, n_most_similar=20) -> dict:
+        """
+        Gets the nearest neighboorhoring words for a list of tokens. By default, returns the 20 most similar words for each token in 'queries' array.
+
+        Parameters:
+        ===
+            queries (list of str): words to find similar ones
+            n_most_similar (int): number of most similar words to get for each word given in the input. By default is 20
+
+        Returns:
+        ===
+            dict of (str, list of str): dictionary containing the mapping between query words given and their respective similar words
+        """
+
         self.model.eval()
 
         # visualize word embeddings by using V to get nearest neighbors
@@ -387,7 +400,7 @@ class ETM(object):
             neighbors = {}
             for word in queries:
                 neighbors[word] = metrics.nearest_neighbors(
-                    word, self.embeddings, self.vocabulary)
+                    word, self.embeddings, self.vocabulary, n_most_similar)
 
             return neighbors
 
