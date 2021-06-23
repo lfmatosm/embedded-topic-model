@@ -37,6 +37,6 @@ setup(
     test_suite='tests',
     tests_require=dev_requirements,
     url='https://github.com/lffloyd/embedded-topic-model',
-    version='1.0.1',
+    version='1.0.2',
     zip_safe=False,
 )
