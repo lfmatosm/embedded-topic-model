@@ -3,56 +3,23 @@ import torch.nn.functional as F
 from torch import nn
 
 
-class Model(nn.Module):
+class Model(torch.nn.Module):
     def __init__(
-            self,
-            device,
-            num_topics,
-            vocab_size,
-            t_hidden_size,
-            rho_size,
-            emsize,
-            theta_act,
-            embeddings=None,
-            train_embeddings=True,
-            enc_drop=0.5,
-            debug_mode=False):
-        super(Model, self).__init__()
-
-        # define hyperparameters
+        self, num_topics: int, vocab_size: int, rho_size: int,
+        train_embeddings: bool, embeddings = None
+    ) -> None:
+        super().__init__()
+                # define hyperparameters
         self.num_topics = num_topics
         self.vocab_size = vocab_size
-        self.t_hidden_size = t_hidden_size
         self.rho_size = rho_size
-        self.enc_drop = enc_drop
-        self.emsize = emsize
-        self.t_drop = nn.Dropout(enc_drop)
-        self.debug_mode = debug_mode
-        self.theta_act = self.get_activation(theta_act)
-
-        self.device = device
 
         # define the word embedding matrix \rho
         if train_embeddings:
             self.rho = nn.Linear(rho_size, vocab_size, bias=False)
         else:
-            num_embeddings, emsize = embeddings.size()
             self.rho = embeddings.clone().float().to(self.device)
-
-        # define the matrix containing the topic embeddings
-        # nn.Parameter(torch.randn(rho_size, num_topics))
-        self.alphas = nn.Linear(rho_size, num_topics, bias=False)
-
-        # define variational distribution for \theta_{1:D} via amortizartion
-        self.q_theta = nn.Sequential(
-            nn.Linear(vocab_size, t_hidden_size),
-            self.theta_act,
-            nn.Linear(t_hidden_size, t_hidden_size),
-            self.theta_act,
-        )
-        self.mu_q_theta = nn.Linear(t_hidden_size, num_topics, bias=True)
-        self.logsigma_q_theta = nn.Linear(t_hidden_size, num_topics, bias=True)
-
+            
     def get_activation(self, act):
         if act == 'tanh':
             act = nn.Tanh()
@@ -75,7 +42,7 @@ class Model(nn.Module):
             if self.debug_mode:
                 print('Defaulting to tanh activation')
         return act
-
+    
     def reparameterize(self, mu, logvar):
         """Returns a sample from a Gaussian distribution via reparameterization.
         """
@@ -85,6 +52,64 @@ class Model(nn.Module):
             return eps.mul_(std).add_(mu)
         else:
             return mu
+        
+    def get_beta(self, *args):
+        pass
+    
+    def get_theta(self, *args):
+        pass
+    
+    def encode(self, *args):
+        pass
+    
+    def decode(self, *args):
+        pass
+
+
+class ETM(Model):
+    def __init__(
+            self,
+            vocab_size: int,
+            num_topics: int = 50,
+            t_hidden_size: int = 800,
+            rho_size: int = 100,
+            theta_act: str = 'relu',
+            train_embeddings=True,
+            embeddings=None,
+            enc_drop=0.5,
+            debug_mode=False
+    ) -> None:
+        super(Model, self).__init__(
+            num_topics, vocab_size, rho_size, 
+            train_embeddings, embeddings
+        )
+
+        # define hyperparameters
+        self.t_hidden_size = t_hidden_size
+        self.enc_drop = enc_drop
+        self.t_drop = nn.Dropout(enc_drop)
+        self.debug_mode = debug_mode
+        self.theta_act = self.get_activation(theta_act)
+
+        # define the word embedding matrix \rho
+        if train_embeddings:
+            self.rho = nn.Linear(rho_size, vocab_size, bias=False)
+        else:
+            self.rho = embeddings.clone().float().to(self.device)
+
+        # define the matrix containing the topic embeddings
+        # nn.Parameter(torch.randn(rho_size, num_topics))
+        self.alphas = nn.Linear(rho_size, num_topics, bias=False)
+
+        # define variational distribution for \theta_{1:D} via amortizartion
+        self.q_theta = nn.Sequential(
+            nn.Linear(vocab_size, t_hidden_size),
+            self.theta_act,
+            nn.Linear(t_hidden_size, t_hidden_size),
+            self.theta_act,
+        )
+        self.mu_q_theta = nn.Linear(t_hidden_size, num_topics, bias=True)
+        self.logsigma_q_theta = nn.Linear(t_hidden_size, num_topics, bias=True)
 
     def encode(self, bows):
         """Returns paramters of the variational distribution for \theta.
@@ -140,3 +165,5 @@ class Model(nn.Module):
         if aggregate:
             recon_loss = recon_loss.mean()
         return recon_loss, kld_theta
+
+
