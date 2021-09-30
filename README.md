@@ -16,7 +16,7 @@ ETM was originally published by Adji B. Dieng, Francisco J. R. Ruiz, and David M
 With the tools provided here, you can run ETM on your dataset using simple steps.
 
 # Installation
-You can install the package using ```pip``` by running: ```pip install -U embedded_topic_model```
+You can use this package by cloning this repository. Installation via pip will be updated soon.
 
 # Usage
 To use ETM on your corpus, you must first preprocess the documents into a format understandable by the model.
@@ -59,7 +59,7 @@ embeddings_mapping = embedding.create_word2vec_embedding_from_dataset(documents)
 To create and fit the model using the training data, execute:
 
 ```python
-from embedded_topic_model.models.etm import ETM
+from embedded_topic_model.core.etm import ETM
 
 # Training an ETM instance
 etm_instance = ETM(
