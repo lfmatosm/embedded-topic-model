@@ -70,7 +70,9 @@ class Trainer:
         eval_perplexity=False,
         debug_mode=False,
     ):
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.vocabulary = vocabulary
+        self.model = model.to(self.device)
         self.vocabulary_size = len(self.vocabulary)
         self.model_path = model_path
         self.batch_size = batch_size
@@ -88,7 +90,6 @@ class Trainer:
         self.eval_batch_size = eval_batch_size
         self.eval_perplexity = eval_perplexity
         self.debug_mode = debug_mode
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         np.random.seed(self.seed)
         torch.manual_seed(self.seed)
@@ -98,7 +99,6 @@ class Trainer:
         self.embeddings = None if train_embeddings else self._initialize_embeddings(
             embeddings, use_c_format_w2vec=use_c_format_w2vec)
 
-        self.model = model
         self.optimizer = self._get_optimizer(optimizer_type, lr, wdecay)
 
     def __str__(self):
@@ -145,14 +145,14 @@ class Trainer:
                 print('Reading embeddings from word2vec file...')
             vectors = KeyedVectors.load(embeddings, mmap='r')
 
-        model_embeddings = np.zeros((self.vocabulary_size, self.emb_size))
+        model_embeddings = np.zeros((self.vocabulary_size, self.model.rho_size))
 
         for i, word in enumerate(self.vocabulary):
             try:
                 model_embeddings[i] = vectors[word]
             except KeyError:
                 model_embeddings[i] = np.random.normal(
-                    scale=0.6, size=(self.emb_size, ))
+                    scale=0.6, size=(self.model.rho_size, ))
         return torch.from_numpy(model_embeddings).to(self.device)
 
     def _get_optimizer(self, optimizer_type, learning_rate, wdecay):
@@ -338,7 +338,7 @@ class Trainer:
             topics = []
             betas = self.model.get_beta()
 
-            for k in range(self.num_topics):
+            for k in range(self.model.num_topics):
                 beta = betas[k]
                 top_words = list(beta.cpu().numpy().argsort()
                                  [-top_n_words:][::-1])
@@ -453,7 +453,7 @@ class Trainer:
 
             topics = []
 
-            for i in range(self.num_topics):
+            for i in range(self.model.num_topics):
                 words = list(beta[i].cpu().numpy())
                 topic_words = [self.vocabulary[a] for a, _ in enumerate(words)]
                 topics.append(topic_words)
