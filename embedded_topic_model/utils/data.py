@@ -26,9 +26,11 @@ def _fetch(path, name):
         counts_1 = scipy.io.loadmat(count_1_file)['counts'].squeeze()
         tokens_2 = scipy.io.loadmat(token_2_file)['tokens'].squeeze()
         counts_2 = scipy.io.loadmat(count_2_file)['counts'].squeeze()
-        return {'tokens': tokens, 'counts': counts,
-                'tokens_1': tokens_1, 'counts_1': counts_1,
-                'tokens_2': tokens_2, 'counts_2': counts_2}
+        return {
+            "test": {'tokens': tokens, 'counts': counts},
+            "test1": {'tokens': tokens_1, 'counts': counts_1},
+            "test2": {'tokens': tokens_2, 'counts': counts_2}
+        }
     return {'tokens': tokens, 'counts': counts}
 
 
@@ -43,7 +45,7 @@ def get_data(path):
     return vocab, train, valid, test
 
 
-def get_batch(tokens, counts, ind, vocab_size, device, emsize=300):
+def get_batch(tokens, counts, ind, vocab_size, device):
     """fetch input data by batch."""
     batch_size = len(ind)
     data_batch = np.zeros((batch_size, vocab_size))
