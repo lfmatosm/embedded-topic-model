@@ -59,22 +59,22 @@ embeddings_mapping = embedding.create_word2vec_embedding_from_dataset(documents)
 To create and fit the model using the training data, execute:
 
 ```python
-from embedded_topic_model.core.etm import ETM
+from embedded_topic_model.core.model import ProdEtm, Model
+from embedded_topic_model.core.trainer import Trainer
 
-# Training an ETM instance
-etm_instance = ETM(
+# Declare model architecture
+prodetm = ProdEtm(
+    len(vocabulary),
+    num_topics=50,
+    train_embeddings=True
+)
+# Declare a trainer to train/eval model
+topic_model = Trainer(
     vocabulary,
-    embeddings=embeddings_mapping, # You can pass here the path to a word2vec file or
-                                   # a KeyedVectors instance
-    num_topics=8,
-    epochs=300,
-    debug_mode=True,
-    train_embeddings=False, # Optional. If True, ETM will learn word embeddings jointly with
-                            # topic embeddings. By default, is False. If 'embeddings' argument
-                            # is being passed, this argument must not be True
+    prodetm
 )
 
-etm_instance.fit(train_dataset)
+topic_model.fit(train_dataset)
 ```
 
 Also, to obtain the topics, topic coherence or topic diversity of the model, you can do as follows:
