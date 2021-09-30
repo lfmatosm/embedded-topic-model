@@ -8,7 +8,7 @@ from typing import List
 from torch import optim
 from gensim.models import KeyedVectors
 
-from embedded_topic_model.core.model import Model
+from embedded_topic_model.core.model import BaseModel
 from embedded_topic_model.utils import data
 from embedded_topic_model.utils import embedding
 from embedded_topic_model.utils import metrics
@@ -19,7 +19,7 @@ class Trainer:
     Creates an embedded topic model instance. The model hyperparameters are:
 
         vocabulary (list of str): training dataset vocabulary
-        model (embedded_topic_model.core.model.Model): model to train
+        model (embedded_topic_model.core.model.BaseModel): model to train
         embeddings (str or KeyedVectors): KeyedVectors instance containing word-vector mapping for embeddings, or its path
         use_c_format_w2vec (bool): wheter input embeddings use word2vec C format. Both BIN and TXT formats are supported
         model_path (str): path to save trained model. If None, the model won't be automatically saved
@@ -46,7 +46,7 @@ class Trainer:
     def __init__(
         self,
         vocabulary: list,
-        model: Model,
+        model: BaseModel,
         embeddings=None,
         use_c_format_w2vec=False,
         model_path=None,

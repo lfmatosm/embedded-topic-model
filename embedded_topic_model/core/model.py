@@ -1,9 +1,10 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
+from embedded_topic_model.core.layer import LinearSVD
 
 
-class Model(nn.Module):
+class BaseModel(nn.Module):
     def __init__(
         self, num_topics: int, vocab_size: int, rho_size: int,
         train_embeddings: bool, embeddings = None
@@ -67,7 +68,7 @@ class Model(nn.Module):
         pass
 
 
-class Etm(Model):
+class Etm(BaseModel):
     def __init__(
             self,
             vocab_size: int,
@@ -130,7 +131,6 @@ class Etm(Model):
 
     def get_beta(self):
         try:
-            # torch.mm(self.rho, self.alphas)
             logit = self.alphas(self.rho.weight)
         except BaseException:
             logit = self.alphas(self.rho)
@@ -163,7 +163,8 @@ class Etm(Model):
         preds = self.decode(theta, beta)
         recon_loss = -(preds * bows).sum(1)
         recon_loss = recon_loss.mean()
-        return recon_loss, kld_theta
+        kld_loss = kld_theta
+        return recon_loss, kld_loss
 
 
 class ProdEtm(Etm):
@@ -186,7 +187,6 @@ class ProdEtm(Etm):
         
     def get_beta(self):
         try:
-            # torch.mm(self.rho, self.alphas)
             logit = self.alphas(self.rho.weight)
         except BaseException:
             logit = self.alphas(self.rho)
@@ -203,3 +203,40 @@ class ProdEtm(Etm):
         res = F.softmax(res, dim=-1)
         preds = torch.log(res + 1e-6)
         return preds
+    
+    
+class DropProdEtm(Etm):
+    def __init__(
+            self,
+            vocab_size: int,
+            num_topics: int = 50,
+            t_hidden_size: int = 800,
+            rho_size: int = 100,
+            theta_act: str = 'relu',
+            train_embeddings=True,
+            embeddings=None,
+            enc_drop=0.5,
+            debug_mode=False
+    ) -> None:
+        super().__init__(
+            vocab_size, num_topics, t_hidden_size, rho_size,
+            theta_act, train_embeddings, embeddings, enc_drop, debug_mode
+        )
+        self.alphas = LinearSVD(rho_size, num_topics, bias=False)
+        
+    def forward(self, bows, normalized_bows, theta=None):
+        # get \theta
+        if theta is None:
+            theta, kld_theta = self.get_theta(normalized_bows)
+        else:
+            kld_theta = None
+
+        # get \beta
+        beta = self.get_beta()
+
+        # get prediction loss
+        preds = self.decode(theta, beta)
+        recon_loss = -(preds * bows).sum(1)
+        recon_loss = recon_loss.mean()
+        kld_loss = kld_theta + self.alphas.kl_loss
+        return recon_loss, kld_loss
