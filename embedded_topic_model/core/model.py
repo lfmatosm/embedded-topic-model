@@ -3,13 +3,14 @@ import torch.nn.functional as F
 from torch import nn
 
 
-class Model(torch.nn.Module):
+class Model(nn.Module):
     def __init__(
         self, num_topics: int, vocab_size: int, rho_size: int,
         train_embeddings: bool, embeddings = None
     ) -> None:
         super().__init__()
-                # define hyperparameters
+        
+        # define hyperparameters
         self.num_topics = num_topics
         self.vocab_size = vocab_size
         self.rho_size = rho_size
@@ -66,7 +67,7 @@ class Model(torch.nn.Module):
         pass
 
 
-class ETM(Model):
+class Etm(Model):
     def __init__(
             self,
             vocab_size: int,
@@ -79,9 +80,9 @@ class ETM(Model):
             enc_drop=0.5,
             debug_mode=False
     ) -> None:
-        super(Model, self).__init__(
-            num_topics, vocab_size, rho_size, 
-            train_embeddings, embeddings
+        super().__init__(
+            num_topics=num_topics, vocab_size=vocab_size, rho_size=rho_size, 
+            train_embeddings=train_embeddings, embeddings=embeddings
         )
 
         # define hyperparameters
@@ -133,9 +134,8 @@ class ETM(Model):
             logit = self.alphas(self.rho.weight)
         except BaseException:
             logit = self.alphas(self.rho)
-        beta = F.softmax(
-            logit, dim=0).transpose(
-            1, 0)  # softmax over vocab dimension
+        logit = logit.transpose(1, 0)  
+        beta = F.softmax(logit, dim=0)          # softmax over vocab dimension
         return beta
 
     def get_theta(self, normalized_bows):
@@ -149,7 +149,7 @@ class ETM(Model):
         preds = torch.log(res + 1e-6)
         return preds
 
-    def forward(self, bows, normalized_bows, theta=None, aggregate=True):
+    def forward(self, bows, normalized_bows, theta=None):
         # get \theta
         if theta is None:
             theta, kld_theta = self.get_theta(normalized_bows)
@@ -162,8 +162,44 @@ class ETM(Model):
         # get prediction loss
         preds = self.decode(theta, beta)
         recon_loss = -(preds * bows).sum(1)
-        if aggregate:
-            recon_loss = recon_loss.mean()
+        recon_loss = recon_loss.mean()
         return recon_loss, kld_theta
 
 
+class ProdEtm(Etm):
+    def __init__(
+            self,
+            vocab_size: int,
+            num_topics: int = 50,
+            t_hidden_size: int = 800,
+            rho_size: int = 100,
+            theta_act: str = 'relu',
+            train_embeddings=True,
+            embeddings=None,
+            enc_drop=0.5,
+            debug_mode=False
+    ) -> None:
+        super().__init__(
+            vocab_size, num_topics, t_hidden_size, rho_size,
+            theta_act, train_embeddings, embeddings, enc_drop, debug_mode
+        )
+        
+    def get_beta(self):
+        try:
+            # torch.mm(self.rho, self.alphas)
+            logit = self.alphas(self.rho.weight)
+        except BaseException:
+            logit = self.alphas(self.rho)
+        beta = logit.transpose(1, 0)  
+        return beta
+    
+    def get_theta(self, normalized_bows):
+        mu_theta, logsigma_theta, kld_theta = self.encode(normalized_bows)
+        theta = self.reparameterize(mu_theta, logsigma_theta)
+        return theta, kld_theta
+    
+    def decode(self, theta, beta):
+        res = torch.mm(theta, beta)
+        res = F.softmax(res, dim=-1)
+        preds = torch.log(res + 1e-6)
+        return preds

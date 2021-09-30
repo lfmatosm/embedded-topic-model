@@ -336,11 +336,11 @@ class Trainer:
 
         with torch.no_grad():
             topics = []
-            gammas = self.model.get_beta()
+            betas = self.model.get_beta()
 
             for k in range(self.num_topics):
-                gamma = gammas[k]
-                top_words = list(gamma.cpu().numpy().argsort()
+                beta = betas[k]
+                top_words = list(beta.cpu().numpy().argsort()
                                  [-top_n_words:][::-1])
                 topic_words = [self.vocabulary[a] for a in top_words]
                 topics.append(topic_words)
