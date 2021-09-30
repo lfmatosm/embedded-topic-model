@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-from embedded_topic_model.core.layer import LinearSVD
+from embedded_topic_model.core.layers import LinearSVD
 
 
 class BaseModel(nn.Module):

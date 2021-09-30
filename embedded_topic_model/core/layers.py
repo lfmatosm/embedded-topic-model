@@ -12,6 +12,7 @@ class LinearSVD(nn.Module):
         self.out_features = out_features
         self.threshold = threshold
         self._bias = bias
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         self.W = nn.Parameter(torch.Tensor(out_features, in_features))
         self.log_sigma = nn.Parameter(torch.Tensor(out_features, in_features))
@@ -35,12 +36,13 @@ class LinearSVD(nn.Module):
             eps = lrt_std.data.new(lrt_std.size()).normal_()
             return lrt_mean + lrt_std * eps
     
-        if self._bias: return F.linear(x, self.W * (self.log_alpha < self.threshold).float()) + self.bias
+        if self._bias: return F.linear(x, self.W * (torch.exp(self.log_alpha) < self.threshold).float()) + self.bias
         else: return F.linear(x, self.W * (self.log_alpha < self.threshold).float()) 
         
     @property
     def kl_loss(self):
-        k1, k2, k3 = torch.Tensor([0.63576]).cuda(), torch.Tensor([1.8732]).cuda(), torch.Tensor([1.48695]).cuda()
+        k1, k2, k3 = torch.Tensor([0.63576]).to(self.device), torch.Tensor([1.8732]).to(self.device), torch.Tensor([1.48695]).to(self.device)
         kl = k1 * torch.sigmoid(k2 + k3 * self.log_alpha) - 0.5 * torch.log1p(torch.exp(-self.log_alpha))
-        kl = - torch.sum(kl).mean()
+        kl = - kl.mean()
         return kl
+    

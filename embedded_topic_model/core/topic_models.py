@@ -8,13 +8,11 @@ from typing import List
 from torch import optim
 from gensim.models import KeyedVectors
 
-from embedded_topic_model.core.model import BaseModel
-from embedded_topic_model.utils import data
-from embedded_topic_model.utils import embedding
-from embedded_topic_model.utils import metrics
+from embedded_topic_model.core.nets import BaseModel
+from embedded_topic_model.utils import data, embedding, metrics
 
 
-class Trainer:
+class TopicModel:
     """
     Creates an embedded topic model instance. The model hyperparameters are:
 
