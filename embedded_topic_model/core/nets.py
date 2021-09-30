@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-from embedded_topic_model.core.layers import LinearSVD
+from embedded_topic_model.core.layers import SVDropout
 
 
 class BaseModel(nn.Module):
@@ -85,12 +85,12 @@ class Etm(BaseModel):
             num_topics=num_topics, vocab_size=vocab_size, rho_size=rho_size, 
             train_embeddings=train_embeddings, embeddings=embeddings
         )
+        self.debug_mode = debug_mode
 
         # define hyperparameters
         self.t_hidden_size = t_hidden_size
         self.enc_drop = enc_drop
         self.t_drop = nn.Dropout(enc_drop)
-        self.debug_mode = debug_mode
         self.theta_act = self.get_activation(theta_act)
 
         # define the word embedding matrix \rho
@@ -100,7 +100,6 @@ class Etm(BaseModel):
             self.rho = embeddings.clone().float().to(self.device)
 
         # define the matrix containing the topic embeddings
-        # nn.Parameter(torch.randn(rho_size, num_topics))
         self.alphas = nn.Linear(rho_size, num_topics, bias=False)
 
         # define variational distribution for \theta_{1:D} via amortizartion
@@ -222,7 +221,18 @@ class DropProdEtm(Etm):
             vocab_size, num_topics, t_hidden_size, rho_size,
             theta_act, train_embeddings, embeddings, enc_drop, debug_mode
         )
-        self.alphas = LinearSVD(rho_size, num_topics, bias=False)
+        self.topic_dropout = SVDropout(num_topics)
+        
+    def get_beta(self):
+        try:
+            logit = self.alphas(self.rho.weight)
+        except BaseException:
+            logit = self.alphas(self.rho)
+        beta = self.topic_dropout(logit)
+        beta = beta.transpose(1, 0)  
+        if self.debug_mode: 
+            print(f"beta shape: {beta.shape}")
+        return beta
         
     def forward(self, bows, normalized_bows, theta=None):
         # get \theta
@@ -233,6 +243,7 @@ class DropProdEtm(Etm):
 
         # get \beta
         beta = self.get_beta()
+        beta = self.topic_dropout(beta)
 
         # get prediction loss
         preds = self.decode(theta, beta)
