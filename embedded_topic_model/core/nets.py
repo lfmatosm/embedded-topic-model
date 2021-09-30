@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-from embedded_topic_model.core.layers import SVDropout
+from embedded_topic_model.core.layers import SVDropout2D
 
 
 class BaseModel(nn.Module):
@@ -221,7 +221,7 @@ class DropProdEtm(Etm):
             vocab_size, num_topics, t_hidden_size, rho_size,
             theta_act, train_embeddings, embeddings, enc_drop, debug_mode
         )
-        self.topic_dropout = SVDropout(num_topics)
+        self.topic_dropout = SVDropout2D(num_topics)
         
     def get_beta(self):
         try:
@@ -230,8 +230,6 @@ class DropProdEtm(Etm):
             logit = self.alphas(self.rho)
         beta = self.topic_dropout(logit)
         beta = beta.transpose(1, 0)  
-        if self.debug_mode: 
-            print(f"beta shape: {beta.shape}")
         return beta
         
     def forward(self, bows, normalized_bows, theta=None):

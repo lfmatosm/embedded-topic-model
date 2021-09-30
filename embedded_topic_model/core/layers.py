@@ -6,7 +6,7 @@ from torch import nn
 class SVDropout2D(nn.Module):
     """A sparse variational dropout apply to a 2D Tensor.
     """
-    def __init__(self, n_features, threshold=0.5):
+    def __init__(self, n_features, dim=1, threshold=0.5):
         super().__init__()
         self.n_features = n_features
         self.threshold = threshold / (1-threshold)
@@ -18,14 +18,16 @@ class SVDropout2D(nn.Module):
         self.log_sigma.data.fill_(-5)        
         
     def forward(self, x):
-        assert x.shape[-1] == self.n_features, \
+        assert x.dim != 2, \
+            "Must be a 2D Tensor"
+        assert x.shape[self.dim] == self.n_features, \
             "Mismatch tensor shape"
         
         if self.training:
-            std = torch.exp(self.log_sigme)
+            std = torch.exp(self.log_sigma)
             eps = std.data.new(std.size()).normal_()
             return 1 + std * eps
-    
+        print(torch.diag(torch.exp(self.log_sigma < self.threshold).float()))
         return torch.matmul(x, torch.diag(torch.exp(self.log_sigma < self.threshold).float()))
         
     @property
