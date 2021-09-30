@@ -42,5 +42,5 @@ class LinearSVD(nn.Module):
     def kl_loss(self):
         k1, k2, k3 = torch.Tensor([0.63576]).cuda(), torch.Tensor([1.8732]).cuda(), torch.Tensor([1.48695]).cuda()
         kl = k1 * torch.sigmoid(k2 + k3 * self.log_alpha) - 0.5 * torch.log1p(torch.exp(-self.log_alpha))
-        kl = - torch.sum(kl)
+        kl = - torch.sum(kl).mean()
         return kl

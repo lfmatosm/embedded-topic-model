@@ -250,7 +250,7 @@ class Trainer:
         cur_real_loss = round(cur_loss + cur_kl_theta, 2)
 
         if self.debug_mode:
-            print('Epoch {} - Learning Rate: {} - KL theta: {} - Rec loss: {} - NELBO: {}'.format(
+            print('Epoch {} \t- Learning Rate: {} - KL Loss: {} - Rec Loss: {} - NELBO: {}'.format(
                 epoch, self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
 
     def _perplexity(self, test_data) -> float:
