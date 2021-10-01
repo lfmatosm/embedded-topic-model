@@ -18,7 +18,7 @@ class BaseModel(nn.Module):
 
         # define the word embedding matrix \rho
         if train_embeddings:
-            self.rho = nn.Linear(rho_size, vocab_size, bias=False)
+            self.rho = nn.Linear(self.rho_size, self.vocab_size, bias=False)
         else:
             self.rho = embeddings.clone().float().to(self.device)
             
@@ -95,22 +95,22 @@ class Etm(BaseModel):
 
         # define the word embedding matrix \rho
         if train_embeddings:
-            self.rho = nn.Linear(rho_size, vocab_size, bias=False)
+            self.rho = nn.Linear(self.rho_size, self.vocab_size, bias=False)
         else:
             self.rho = embeddings.clone().float().to(self.device)
 
         # define the matrix containing the topic embeddings
-        self.alphas = nn.Linear(rho_size, num_topics, bias=False)
+        self.alphas = nn.Linear(self.rho_size, self.num_topics, bias=False)
 
-        # define variational distribution for \theta_{1:D} via amortizartion
+        # define variational distribution for \theta_{1:D} via amortization
         self.q_theta = nn.Sequential(
-            nn.Linear(vocab_size, t_hidden_size),
+            nn.Linear(self.vocab_size, self.t_hidden_size),
             self.theta_act,
-            nn.Linear(t_hidden_size, t_hidden_size),
+            nn.Linear(self.t_hidden_size, self.t_hidden_size),
             self.theta_act,
         )
-        self.mu_q_theta = nn.Linear(t_hidden_size, num_topics, bias=True)
-        self.logsigma_q_theta = nn.Linear(t_hidden_size, num_topics, bias=True)
+        self.mu_q_theta = nn.Linear(self.t_hidden_size, self.num_topics, bias=True)
+        self.logsigma_q_theta = nn.Linear(self.t_hidden_size, self.num_topics, bias=True)
 
     def encode(self, bows):
         """Returns paramters of the variational distribution for \theta.
@@ -241,11 +241,16 @@ class DropProdEtm(Etm):
 
         # get \beta
         beta = self.get_beta()
-        beta = self.topic_dropout(beta)
 
         # get prediction loss
         preds = self.decode(theta, beta)
         recon_loss = -(preds * bows).sum(1)
         recon_loss = recon_loss.mean()
-        kld_loss = kld_theta + self.alphas.kl_loss
+        kld_loss = kld_theta + self.topic_dropout.kl_loss
         return recon_loss, kld_loss
+
+    def decode(self, theta, beta):
+        res = torch.mm(theta, beta)
+        res = F.softmax(res, dim=-1)
+        preds = torch.log(res + 1e-6)
+        return preds

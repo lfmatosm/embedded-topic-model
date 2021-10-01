@@ -248,8 +248,8 @@ class TopicModel:
         cur_real_loss = round(cur_loss + cur_kl_theta, 2)
 
         if self.debug_mode:
-            print('Epoch {} \t- Learning Rate: {} - KL Loss: {} - Rec Loss: {} - NELBO: {}'.format(
-                epoch, self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
+            print('Epoch {:<3} \t KL Loss: {:<10.2f} Rec Loss: {:<10.2f} \t NELBO: {:<10.2f}'.format(
+                epoch, cur_kl_theta, cur_loss, cur_real_loss))
 
     def _perplexity(self, test_data) -> float:
         """Computes perplexity on document completion for a given testing data.
@@ -399,7 +399,7 @@ class TopicModel:
         if self.debug_mode:
             print(f'Topics before training: {self.get_topics()}')
 
-        for epoch in range(1, self.epochs):
+        for epoch in range(1, self.epochs + 1):
             self._train(epoch)
 
             if self.eval_perplexity:
@@ -582,3 +582,15 @@ class TopicModel:
         with open(model_path, 'rb') as file:
             self.model = torch.load(file)
             self.model = self.model.to(self.device)
+
+    @property
+    def num_topics(self):
+        return self.model.num_topics
+
+    @property
+    def model(self):
+        return self.__model
+
+    @model.setter
+    def model(self, model: BaseModel):
+        self.__model = model.to(self.device)

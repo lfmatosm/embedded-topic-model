@@ -8,9 +8,10 @@ class SVDropout2D(nn.Module):
     """
     def __init__(self, n_features, dim=1, threshold=0.5):
         super().__init__()
-        self.n_features = n_features
-        self.threshold = threshold / (1-threshold)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.n_features = n_features
+        self.dim = dim
+        self.threshold = threshold / (1-threshold)
         self.log_sigma = nn.Parameter(torch.Tensor(n_features))
         self._init_weights()
 
@@ -22,13 +23,15 @@ class SVDropout2D(nn.Module):
             "Must be a 2D Tensor"
         assert x.shape[self.dim] == self.n_features, \
             "Mismatch tensor shape"
-        
+        if self.dim == 0: x = x.permute(1, 0)
+
         if self.training:
-            std = torch.exp(self.log_sigma)
-            eps = std.data.new(std.size()).normal_()
-            return 1 + std * eps
-        print(torch.diag(torch.exp(self.log_sigma < self.threshold).float()))
-        return torch.matmul(x, torch.diag(torch.exp(self.log_sigma < self.threshold).float()))
+            sigma = torch.exp(self.log_sigma)
+            eps = sigma.data.new(sigma.size()).normal_()
+            a = torch.ones_like(sigma) + sigma * eps
+            return torch.matmul(x, torch.diag(a))
+        
+        return torch.matmul(x, torch.diag((torch.exp(self.log_sigma) < self.threshold).float()))
         
     @property
     def kl_loss(self):
