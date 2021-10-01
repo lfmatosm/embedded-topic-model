@@ -8,27 +8,20 @@ from typing import List
 from torch import optim
 from gensim.models import KeyedVectors
 
-from embedded_topic_model.models.model import Model
-from embedded_topic_model.utils import data
-from embedded_topic_model.utils import embedding
-from embedded_topic_model.utils import metrics
+from embedded_topic_model.core.nets import BaseModel
+from embedded_topic_model.utils import data, embedding, metrics
 
 
-class ETM(object):
+class TopicModel:
     """
     Creates an embedded topic model instance. The model hyperparameters are:
 
         vocabulary (list of str): training dataset vocabulary
+        model (embedded_topic_model.core.model.BaseModel): model to train
         embeddings (str or KeyedVectors): KeyedVectors instance containing word-vector mapping for embeddings, or its path
         use_c_format_w2vec (bool): wheter input embeddings use word2vec C format. Both BIN and TXT formats are supported
         model_path (str): path to save trained model. If None, the model won't be automatically saved
         batch_size (int): input batch size for training
-        num_topics (int): number of topics
-        rho_size (int): dimension of rho
-        emb_size (int): dimension of embeddings
-        t_hidden_size (int): dimension of hidden space of q(theta)
-        theta_act (str): tanh, softplus, relu, rrelu, leakyrelu, elu, selu, glu)
-        train_embeddings (int): whether to fix rho or train it
         lr (float): learning rate
         lr_factor (float): divide learning rate by this...
         epochs (int): number of epochs to train. 150 for 20ng 100 for others
@@ -50,20 +43,16 @@ class ETM(object):
 
     def __init__(
         self,
-        vocabulary,
+        vocabulary: list,
+        model: BaseModel,
         embeddings=None,
         use_c_format_w2vec=False,
         model_path=None,
-        batch_size=1000,
-        num_topics=50,
-        rho_size=300,
-        emb_size=300,
-        t_hidden_size=800,
-        theta_act='relu',
+        batch_size=32,
         train_embeddings=False,
         lr=0.005,
         lr_factor=4.0,
-        epochs=20,
+        epochs=100,
         optimizer_type='adam',
         seed=2019,
         enc_drop=0.0,
@@ -79,15 +68,12 @@ class ETM(object):
         eval_perplexity=False,
         debug_mode=False,
     ):
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.vocabulary = vocabulary
+        self.model = model.to(self.device)
         self.vocabulary_size = len(self.vocabulary)
         self.model_path = model_path
         self.batch_size = batch_size
-        self.num_topics = num_topics
-        self.rho_size = rho_size
-        self.emb_size = emb_size
-        self.t_hidden_size = t_hidden_size
-        self.theta_act = theta_act
         self.lr_factor = lr_factor
         self.epochs = epochs
         self.seed = seed
@@ -102,8 +88,6 @@ class ETM(object):
         self.eval_batch_size = eval_batch_size
         self.eval_perplexity = eval_perplexity
         self.debug_mode = debug_mode
-        self.device = torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu')
 
         np.random.seed(self.seed)
         torch.manual_seed(self.seed)
@@ -113,19 +97,6 @@ class ETM(object):
         self.embeddings = None if train_embeddings else self._initialize_embeddings(
             embeddings, use_c_format_w2vec=use_c_format_w2vec)
 
-        self.model = Model(
-            self.device,
-            self.num_topics,
-            self.vocabulary_size,
-            self.t_hidden_size,
-            self.rho_size,
-            self.emb_size,
-            self.theta_act,
-            self.embeddings,
-            train_embeddings,
-            self.enc_drop,
-            self.debug_mode).to(
-            self.device)
         self.optimizer = self._get_optimizer(optimizer_type, lr, wdecay)
 
     def __str__(self):
@@ -172,14 +143,14 @@ class ETM(object):
                 print('Reading embeddings from word2vec file...')
             vectors = KeyedVectors.load(embeddings, mmap='r')
 
-        model_embeddings = np.zeros((self.vocabulary_size, self.emb_size))
+        model_embeddings = np.zeros((self.vocabulary_size, self.model.rho_size))
 
         for i, word in enumerate(self.vocabulary):
             try:
                 model_embeddings[i] = vectors[word]
             except KeyError:
                 model_embeddings[i] = np.random.normal(
-                    scale=0.6, size=(self.emb_size, ))
+                    scale=0.6, size=(self.model.rho_size, ))
         return torch.from_numpy(model_embeddings).to(self.device)
 
     def _get_optimizer(self, optimizer_type, learning_rate, wdecay):
@@ -277,8 +248,8 @@ class ETM(object):
         cur_real_loss = round(cur_loss + cur_kl_theta, 2)
 
         if self.debug_mode:
-            print('Epoch {} - Learning Rate: {} - KL theta: {} - Rec loss: {} - NELBO: {}'.format(
-                epoch, self.optimizer.param_groups[0]['lr'], cur_kl_theta, cur_loss, cur_real_loss))
+            print('Epoch {:<3} \t KL Loss: {:<10.2f} Rec Loss: {:<10.2f} \t NELBO: {:<10.2f}'.format(
+                epoch, cur_kl_theta, cur_loss, cur_real_loss))
 
     def _perplexity(self, test_data) -> float:
         """Computes perplexity on document completion for a given testing data.
@@ -363,11 +334,11 @@ class ETM(object):
 
         with torch.no_grad():
             topics = []
-            gammas = self.model.get_beta()
+            betas = self.model.get_beta()
 
-            for k in range(self.num_topics):
-                gamma = gammas[k]
-                top_words = list(gamma.cpu().numpy().argsort()
+            for k in range(self.model.num_topics):
+                beta = betas[k]
+                top_words = list(beta.cpu().numpy().argsort()
                                  [-top_n_words:][::-1])
                 topic_words = [self.vocabulary[a] for a in top_words]
                 topics.append(topic_words)
@@ -428,7 +399,7 @@ class ETM(object):
         if self.debug_mode:
             print(f'Topics before training: {self.get_topics()}')
 
-        for epoch in range(1, self.epochs):
+        for epoch in range(1, self.epochs + 1):
             self._train(epoch)
 
             if self.eval_perplexity:
@@ -480,7 +451,7 @@ class ETM(object):
 
             topics = []
 
-            for i in range(self.num_topics):
+            for i in range(self.model.num_topics):
                 words = list(beta[i].cpu().numpy())
                 topic_words = [self.vocabulary[a] for a, _ in enumerate(words)]
                 topics.append(topic_words)
@@ -611,3 +582,15 @@ class ETM(object):
         with open(model_path, 'rb') as file:
             self.model = torch.load(file)
             self.model = self.model.to(self.device)
+
+    @property
+    def num_topics(self):
+        return self.model.num_topics
+
+    @property
+    def model(self):
+        return self.__model
+
+    @model.setter
+    def model(self, model: BaseModel):
+        self.__model = model.to(self.device)
