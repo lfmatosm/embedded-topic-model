@@ -102,13 +102,16 @@ class ETM(object):
         self.eval_batch_size = eval_batch_size
         self.eval_perplexity = eval_perplexity
         self.debug_mode = debug_mode
-        self.device = torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu')
+
+        if torch.cuda.is_available():
+            device = 'cuda'
+        elif torch.backends.mps.is_available():
+            device = 'mps'
+        self.device = torch.device(device)
+        torch.manual_seed(self.seed)
 
         np.random.seed(self.seed)
         torch.manual_seed(self.seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed(self.seed)
 
         self.embeddings = None if train_embeddings else self._initialize_embeddings(
             embeddings, use_c_format_w2vec=use_c_format_w2vec)
@@ -180,7 +183,7 @@ class ETM(object):
             except KeyError:
                 model_embeddings[i] = np.random.normal(
                     scale=0.6, size=(self.emb_size, ))
-        return torch.from_numpy(model_embeddings).to(self.device)
+        return torch.from_numpy(model_embeddings.astype(np.float32)).to(self.device)
 
     def _get_optimizer(self, optimizer_type, learning_rate, wdecay):
         if optimizer_type == 'adam':
