@@ -66,8 +66,8 @@ def create_word2vec_embedding_from_dataset(
         sentences,
         min_count=min_count,
         sg=sg,
-        size=dim_rho,
-        iter=iters,
+        vector_size=dim_rho,
+        epochs=iters,
         workers=workers,
         negative=negative_samples,
         window=window_size)
