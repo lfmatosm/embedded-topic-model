@@ -46,6 +46,96 @@ def _to_numpy_array(documents):
                     dtype=object).squeeze()
 
 
+def create_bow_dataset(
+        dataset: List[str],
+        vocabulary: List[str],
+        debug_mode=False) -> Tuple[list, dict, dict]:
+    """
+    Creates a bag-of-words (BOW) dataset from a given corpus. The vocabulary **must** be the same of the training corpus.
+
+    Parameters:
+    ===
+        dataset (list of str): original corpus to be preprocessed. Is composed by a list of sentences
+        vocabulary (list of str): words vocabulary. Doesn't includes words not in the training dataset
+        debug_mode (bool): Wheter or not to log function's operations to the console. By default, no logs are made
+
+    Returns:
+    ===
+        train_dataset (dict): BOW training dataset, split in tokens and counts. Must be used on ETM's fit() method.
+    """
+    vectorizer = CountVectorizer(vocabulary=vocabulary)
+    vectorized_documents = vectorizer.transform(dataset)
+
+    dataset = [
+        [word for word in document.split()]
+        for document in dataset]
+
+    signed_documents = vectorized_documents.sign()
+
+    if debug_mode:
+        print('Building vocabulary...')
+
+    sum_counts = signed_documents.sum(axis=0)
+    v_size = sum_counts.shape[1]
+    sum_counts_np = np.zeros(v_size, dtype=int)
+    for v in range(v_size):
+        sum_counts_np[v] = sum_counts[0, v]
+
+    # Sort elements in vocabulary
+    if debug_mode:
+        print('Tokenizing documents and splitting into train/test...')
+
+    num_docs = signed_documents.shape[0]
+    train_dataset_size = num_docs
+    idx_permute = np.random.permutation(num_docs).astype(int)
+
+    # Create dictionary and inverse dictionary
+    word2id, id2word = _create_dictionaries(vocabulary)
+
+    docs_train = [[word2id[w] for w in dataset[idx_permute[idx_d]]
+                   if w in word2id] for idx_d in range(train_dataset_size)]
+    
+    if debug_mode:
+        print(
+            'Number of documents (train_dataset): {} [this should be equal to {}]'.format(
+                len(docs_train),
+                train_dataset_size))
+
+    if debug_mode:
+        print('Removing empty documents...')
+
+    docs_train = _remove_empty_documents(docs_train)
+
+    # Obtains the training and test datasets as word lists
+    words_train = [[id2word[w] for w in doc] for doc in docs_train]
+
+    words_train = _create_list_words(docs_train)
+
+    if debug_mode:
+        print('len(words_train): ', len(words_train))
+
+    doc_indices_train = _create_document_indices(docs_train)
+
+    if debug_mode:
+        print('len(np.unique(doc_indices_train)): {} [this should be {}]'.format(
+            len(np.unique(doc_indices_train)), len(docs_train)))
+
+    # Number of documents in each set
+    n_docs_train = len(docs_train)
+
+    bow_train = _create_bow(
+        doc_indices_train,
+        words_train,
+        n_docs_train,
+        len(vocabulary))
+    
+    bow_train_tokens, bow_train_counts = _split_bow(bow_train, n_docs_train)
+
+    return {
+        'tokens': _to_numpy_array(bow_train_tokens),
+        'counts': _to_numpy_array(bow_train_counts),
+    }
+
 def create_etm_datasets(
         dataset: List[str],
         train_size=1.0,
