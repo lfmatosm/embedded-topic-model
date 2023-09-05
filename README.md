@@ -11,7 +11,7 @@ in the word embedding space, arranging together topics and words with similar co
 As such, ETM can either learn word embeddings alongside topics, or be given pretrained embeddings to discover
 the topic patterns on the corpus.
 
-ETM was originally published by Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei on a article titled ["Topic Modeling in Embedding Spaces"](https://arxiv.org/abs/1907.04907) in 2019. This code is an adaptation of the [original](https://github.com/adjidieng/ETM) provided with the article. Most of the original code was kept here, with some changes here and there, mostly for ease of usage.
+ETM was originally published by Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei on a article titled ["Topic Modeling in Embedding Spaces"](https://arxiv.org/abs/1907.04907) in 2019. This code is an adaptation of the [original](https://github.com/adjidieng/ETM) provided with the article and is not affiliated in any manner with the original authors. Most of the original code was kept here, with some changes here and there, mostly for ease of usage.
 
 With the tools provided here, you can run ETM on your dataset using simple steps.
 
@@ -31,7 +31,7 @@ import json
 
 # Loading a dataset in JSON format. As said, documents must be composed by string sentences
 corpus_file = 'datasets/example_dataset.json'
-documents_raw = json.load(open(dataset, 'r'))
+documents_raw = json.load(open(corpus_file, 'r'))
 documents = [document['body'] for document in documents_raw]
 
 # Preprocessing the dataset
