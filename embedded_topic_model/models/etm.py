@@ -461,14 +461,14 @@ class ETM(object):
 
     def get_topic_word_matrix(self) -> List[List[str]]:
         """
-        Obtains the topic-word matrix learned for the model.
+        Obtains the topic word matrix learned for the model.
 
-        The topic-word matrix lists all words for each discovered topic.
+        The topic word matrix lists all words for each discovered topic.
         As such, this method will return a matrix representing the words.
 
         Returns:
         ===
-            list of list of str: topic-word matrix.
+            list of list of str: topic word matrix.
             Example:
                 [['world', 'planet', 'stars', 'moon', 'astrophysics'], ...]
         """
@@ -489,15 +489,15 @@ class ETM(object):
 
     def get_topic_word_dist(self) -> torch.Tensor:
         """
-        Obtains the topic-word distribution matrix.
+        Obtains the topic word distribution matrix.
 
-        The topic-word distribution matrix lists the probabilities for each word on each topic.
+        The topic word distribution matrix lists the probabilities for each word on each topic.
 
         This is a normalized distribution matrix, and as such, each row sums to one.
 
         Returns:
         ===
-            torch.Tensor: topic-word distribution matrix, with KxV dimension, where
+            torch.Tensor: topic word distribution matrix, with KxV dimension, where
             K is the number of topics and V is the vocabulary size
             Example:
                 tensor([[3.2238e-04, 3.7851e-03, 3.2811e-04, ..., 8.4206e-05, 7.9504e-05,
@@ -513,16 +513,16 @@ class ETM(object):
 
     def get_document_topic_dist(self) -> torch.Tensor:
         """
-        Obtains the document-topic distribution matrix.
+        Obtains the document topic distribution matrix.
 
-        The document-topic distribution matrix lists the probabilities for each topic on each document.
+        The document topic distribution matrix lists the probabilities for each topic on each document.
 
         This is a normalized distribution matrix, and as such, each row sums to one.
 
         Returns:
         ===
-            torch.Tensor: topic-word distribution matrix, with DxK dimension, where
-            D is the number of documents in the corpus and K is the number of topics
+            torch.Tensor: document topic distribution matrix, with DxK dimension, where
+            D is the number of documents in the training corpus and K is the number of topics
             Example:
                 tensor([[0.1840, 0.0489, 0.1020, 0.0726, 0.1952, 0.1042, 0.1275, 0.1657],
                 [0.1417, 0.0918, 0.2263, 0.0840, 0.0900, 0.1635, 0.1209, 0.0817]])
@@ -545,7 +545,48 @@ class ETM(object):
                     self.device)
                 sums = data_batch.sum(1).unsqueeze(1)
                 normalized_data_batch = data_batch / sums if self.bow_norm else data_batch
-                theta, _ = self.model.get_theta(normalized_data_batch)
+                theta, _ = self.model.get_theta(normalized_data_batch, debug=False)
+
+                thetas.append(theta)
+
+            return torch.cat(tuple(thetas), 0)
+    
+    def transform(self, X) -> torch.Tensor:
+        """
+        Transforms the given data with the learned distribution, outputting prediction for unseen data.
+
+        Parameters:
+        ===
+            X (dict): BOW dataset, split in tokens and counts
+
+        Returns:
+        ===
+            torch.Tensor: document topic distribution matrix, with DxK dimension, where
+            D is the number of documents in the corpus X and K is the number of topics.
+            This is a normalized distribution matrix, and as such, each row sums to one.
+            Example:
+                tensor([[0.1840, 0.0489, 0.1020, 0.0726, 0.1952, 0.1042, 0.1275, 0.1657],
+                [0.1417, 0.0918, 0.2263, 0.0840, 0.0900, 0.1635, 0.1209, 0.0817]])
+        """
+        self.model = self.model.to(self.device)
+        self.model.eval()
+
+        with torch.no_grad():
+            indices = torch.tensor(range(len(X["tokens"])))
+            indices = torch.split(indices, self.batch_size)
+
+            thetas = []
+
+            for idx, ind in enumerate(indices):
+                data_batch = data.get_batch(
+                    X["tokens"],
+                    X["counts"],
+                    ind,
+                    self.vocabulary_size,
+                    self.device)
+                sums = data_batch.sum(1).unsqueeze(1)
+                normalized_data_batch = data_batch / sums if self.bow_norm else data_batch
+                theta, _ = self.model.get_theta(normalized_data_batch, debug=False)
 
                 thetas.append(theta)
 
