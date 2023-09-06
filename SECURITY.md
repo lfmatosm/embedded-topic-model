@@ -14,6 +14,3 @@ The following table lists currently supported versions of this package. If you h
 ## Reporting a Vulnerability
 If you've found a vulnerability on this package or any of its dependencies, feel free to open an [issue](https://github.com/lffloyd/embedded-topic-model/issues) reporting that. Please note, however, that you must never report security related issues, vulnerabilities or bugs including sensitive information to the issue tracker, or elsewhere in public. Instead sensitive bugs must be sent by email to lfmatosmelo@id.uff.br.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
