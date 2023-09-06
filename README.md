@@ -19,7 +19,7 @@ With the tools provided here, you can run ETM on your dataset using simple steps
 
 * [:beer: Installation](#beer-installation)
 * [:wrench: Usage](#wrench-usage)
-    * [:microscope: Examples](#examples)
+    * [:microscope: Examples](#microscope-examples)
 * [:books: Citation](#books-citation)
 * [:heart: Contributing](#heart-contributing)
 * [:v: Acknowledgements](#v-acknowledgements)
