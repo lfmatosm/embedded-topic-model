@@ -2,6 +2,18 @@
 
 This changelog was inspired by the [keep-a-changelog](https://github.com/olivierlacan/keep-a-changelog) project and follows [semantic versioning](https://semver.org).
 
+## [1.1.0] - 2023-09-05
+
+### Added
+
+- (#3f27ee) adds `transform` method
+- (#f98f3f) adds example jupyter notebook
+- (#683bec) adds contributing and conduct guidelines
+
+### Changed
+
+- (#f98f3f, #c918a4) updates documentation
+
 ## [1.0.2] - 2021-06-23
 
 ### Changed
