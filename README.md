@@ -11,14 +11,24 @@ in the word embedding space, arranging together topics and words with similar co
 As such, ETM can either learn word embeddings alongside topics, or be given pretrained embeddings to discover
 the topic patterns on the corpus.
 
-ETM was originally published by Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei on a article titled ["Topic Modeling in Embedding Spaces"](https://arxiv.org/abs/1907.04907) in 2019. This code is an adaptation of the [original](https://github.com/adjidieng/ETM) provided with the article and is not affiliated in any manner with the original authors. Most of the original code was kept here, with some changes here and there, mostly for ease of usage.
+ETM was originally published by Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei on a article titled ["Topic Modeling in Embedding Spaces"](https://arxiv.org/abs/1907.04907) in 2019. This code is an adaptation of the [original](https://github.com/adjidieng/ETM) provided with the article and is not affiliated in any manner with the original authors. Most of the original code was kept here, with some changes here and there, mostly for ease of usage. This package was created to facilitate research purposes. If you want a more stable and feature-rich package to train ETM and other models, take a look at [OCTIS](https://github.com/MIND-Lab/OCTIS).
 
 With the tools provided here, you can run ETM on your dataset using simple steps.
 
-# Installation
+# Index
+
+* [:beer: Installation](#beer-installation)
+* [:wrench: Usage](#wrench-usage)
+    * [:microscope: Examples](#examples)
+* [:books: Citation](#books-citation)
+* [:heart: Contributing](#heart-contributing)
+* [:v: Acknowledgements](#v-acknowledgements)
+* [:pushpin: License](#pushpin-license)
+
+# :beer: Installation
 You can install the package using ```pip``` by running: ```pip install -U embedded_topic_model```
 
-# Usage
+# :wrench: Usage
 To use ETM on your corpus, you must first preprocess the documents into a format understandable by the model.
 This package has a quick-use preprocessing script. The only requirement is that the corpus must be composed
 by a list of strings, where each string corresponds to a document in the corpus.
@@ -67,7 +77,7 @@ etm_instance = ETM(
     embeddings=embeddings_mapping, # You can pass here the path to a word2vec file or
                                    # a KeyedVectors instance
     num_topics=8,
-    epochs=300,
+    epochs=100,
     debug_mode=True,
     train_embeddings=False, # Optional. If True, ETM will learn word embeddings jointly with
                             # topic embeddings. By default, is False. If 'embeddings' argument
@@ -77,7 +87,23 @@ etm_instance = ETM(
 etm_instance.fit(train_dataset)
 ```
 
-Also, to obtain the topics, topic coherence or topic diversity of the model, you can do as follows:
+You can get the topic words with this method. Note that you can select how many word per topic you're interest in:
+```python
+t_w_mtx = etm_instance.get_topics(top_n_words=20)
+```
+
+You can get the topic word matrix with this method. Note that it will return all word for each topic:
+```python
+t_w_mtx = etm_instance.get_topic_word_matrix()
+```
+
+You can get the topic word distribution matrix and the document topic distribution matrix with the following methods, both return a normalized distribution matrix:
+```python
+t_w_dist_mtx = etm_instance.get_topic_word_dist()
+d_t_dist_mtx = etm_instance.get_document_topic_dist()
+```
+
+Also, to obtain topic coherence or topic diversity of the model, you can do as follows:
 
 ```python
 topics = etm_instance.get_topics(20)
@@ -85,7 +111,39 @@ topic_coherence = etm_instance.get_topic_coherence()
 topic_diversity = etm_instance.get_topic_diversity()
 ```
 
-# Citation
+You can also predict topics for unseen documents with the following.
+
+```python
+from embedded_topic_model.utils import preprocessing
+from embedded_topic_model.models.etm import ETM
+
+corpus_file = 'datasets/example_dataset.json'
+documents_raw = json.load(open(corpus_file, 'r'))
+documents = [document['body'] for document in documents_raw]
+
+# Splits into train/test datasets
+train = documents[:len(documents)-100]
+test = documents[len(documents)-100:]
+
+# Model fitting
+# ...
+
+# The vocabulary must be the same one created during preprocessing of the training dataset (see above)
+preprocessed_test = preprocessing.create_bow_dataset(test, vocabulary)
+# Transforms test dataset and returns normalized document topic distribution
+test_d_t_dist = etm_instance.transform(preprocessed_test)
+print(f'test_d_t_dist: {test_d_t_dist}')
+```
+
+For further details, see [examples](#microscope-examples).
+
+## :microscope: Examples
+
+| title                                       | link |
+| :-------------:                             | :--: |
+| ETM example - Reddit (r/depression) dataset | [Jupyter Notebook](./2023-09-01%20-%20reddit%20-%20depression%20dataset%20-%20etm%20-%20example.ipynb) |
+
+# :books: Citation
 To cite ETM, use the original article's citation:
 
 ```
@@ -97,8 +155,11 @@ To cite ETM, use the original article's citation:
 }
 ```
 
-# Acknowledgements
+# :heart: Contributing
+Contributions are always welcomed :heart:! You can take a look at []() to see some guidelines. Feel free to contact through issues, to elaborate on desired enhancements and to check if work is already being done on the matter.
+
+# :v: Acknowledgements
 Credits given to Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei for the original work.
 
-# License
+# :pushpin: License
 Licensed under [MIT](LICENSE) license.
