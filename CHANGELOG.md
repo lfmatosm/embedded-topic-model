@@ -6,13 +6,13 @@ This changelog was inspired by the [keep-a-changelog](https://github.com/olivier
 
 ### Added
 
-- (#3f27ee) adds `transform` method
-- (#f98f3f) adds example jupyter notebook
-- (#683bec) adds contributing and conduct guidelines
+- ([#3f27ee](https://github.com/lffloyd/embedded-topic-model/commit/3f27ee)) adds `transform` method
+- ([#f98f3f](https://github.com/lffloyd/embedded-topic-model/commit/f98f3f)) adds example jupyter notebook
+- ([#683bec](https://github.com/lffloyd/embedded-topic-model/commit/683bec)) adds contributing and conduct guidelines
 
 ### Changed
 
-- (#f98f3f, #c918a4) updates documentation
+- ([#f98f3f](https://github.com/lffloyd/embedded-topic-model/commit/f98f3f), [#c918a4](https://github.com/lffloyd/embedded-topic-model/commit/c918a4)) updates documentation
 
 ## [1.0.2] - 2021-06-23
 
