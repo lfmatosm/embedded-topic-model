@@ -2,6 +2,12 @@
 
 This changelog was inspired by the [keep-a-changelog](https://github.com/olivierlacan/keep-a-changelog) project and follows [semantic versioning](https://semver.org).
 
+## [1.2.1] - 2023-09-06
+
+### Changed
+
+- ([#cf35c3](https://github.com/lffloyd/embedded-topic-model/commit/cf35c3)) fixes minimum python version to be `python>=3.9`
+
 ## [1.2.0] - 2023-09-06
 
 ### Added
