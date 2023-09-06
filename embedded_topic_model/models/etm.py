@@ -103,6 +103,7 @@ class ETM(object):
         self.eval_perplexity = eval_perplexity
         self.debug_mode = debug_mode
 
+        device = 'cpu'
         if torch.cuda.is_available():
             device = 'cuda'
         elif torch.backends.mps.is_available():
