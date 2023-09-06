@@ -17,12 +17,18 @@ setup(
     author_email='lfmatosmelo@id.uff.br',
     python_requires='>=3.6',
     classifiers=[
+        'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
+        'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Topic :: Software Development',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Operating System :: Unix'
     ],
     description='A package to run embedded topic modelling',
     install_requires=requirements,

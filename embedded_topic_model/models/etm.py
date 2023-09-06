@@ -28,7 +28,7 @@ class ETM(object):
         emb_size (int): dimension of embeddings
         t_hidden_size (int): dimension of hidden space of q(theta)
         theta_act (str): tanh, softplus, relu, rrelu, leakyrelu, elu, selu, glu)
-        train_embeddings (int): whether to fix rho or train it
+        train_embeddings (bool): whether to fix rho or train it
         lr (float): learning rate
         lr_factor (float): divide learning rate by this...
         epochs (int): number of epochs to train. 150 for 20ng 100 for others
