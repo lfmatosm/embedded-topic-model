@@ -540,7 +540,7 @@ class ETM(object):
 
             thetas = []
 
-            for idx, ind in enumerate(indices):
+            for ind in indices:
                 data_batch = data.get_batch(
                     self.train_tokens,
                     self.train_counts,
@@ -549,7 +549,7 @@ class ETM(object):
                     self.device)
                 sums = data_batch.sum(1).unsqueeze(1)
                 normalized_data_batch = data_batch / sums if self.bow_norm else data_batch
-                theta, _ = self.model.get_theta(normalized_data_batch, debug=False)
+                theta, _ = self.model.get_theta(normalized_data_batch)
 
                 thetas.append(theta)
 
@@ -581,7 +581,7 @@ class ETM(object):
 
             thetas = []
 
-            for idx, ind in enumerate(indices):
+            for ind in indices:
                 data_batch = data.get_batch(
                     X["tokens"],
                     X["counts"],
@@ -590,7 +590,7 @@ class ETM(object):
                     self.device)
                 sums = data_batch.sum(1).unsqueeze(1)
                 normalized_data_batch = data_batch / sums if self.bow_norm else data_batch
-                theta, _ = self.model.get_theta(normalized_data_batch, debug=False)
+                theta, _ = self.model.get_theta(normalized_data_batch)
 
                 thetas.append(theta)
 
