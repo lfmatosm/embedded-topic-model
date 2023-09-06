@@ -28,7 +28,7 @@ setup(
         'Topic :: Software Development',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
-        'Operating System :: MacOS'
+        'Operating System :: MacOS',
         'Operating System :: Unix'
     ],
     description='A package to run embedded topic modelling',
