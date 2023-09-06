@@ -140,7 +140,7 @@ def create_etm_datasets(
         dataset: List[str],
         train_size=1.0,
         min_df=1,
-        max_df=100.0,
+        max_df=1.0,
         debug_mode=False) -> Tuple[list, dict, dict]:
     """
     Creates vocabulary and train / test datasets from a given corpus. The vocabulary and datasets can

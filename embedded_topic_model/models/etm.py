@@ -103,6 +103,7 @@ class ETM(object):
         self.eval_perplexity = eval_perplexity
         self.debug_mode = debug_mode
 
+        device = 'cpu'
         if torch.cuda.is_available():
             device = 'cuda'
         elif torch.backends.mps.is_available():
@@ -148,7 +149,7 @@ class ETM(object):
             for line in iterator:
                 word = line[0]
                 if word in self.vocabulary:
-                    vect = np.array(line[1:]).astype(np.float)
+                    vect = np.array(line[1:]).astype(float)
                     vectors[word] = vect
             return vectors
         elif self._get_extension(embeddings_file) == 'bin':
@@ -539,7 +540,7 @@ class ETM(object):
 
             thetas = []
 
-            for idx, ind in enumerate(indices):
+            for ind in indices:
                 data_batch = data.get_batch(
                     self.train_tokens,
                     self.train_counts,
@@ -548,7 +549,7 @@ class ETM(object):
                     self.device)
                 sums = data_batch.sum(1).unsqueeze(1)
                 normalized_data_batch = data_batch / sums if self.bow_norm else data_batch
-                theta, _ = self.model.get_theta(normalized_data_batch, debug=False)
+                theta, _ = self.model.get_theta(normalized_data_batch)
 
                 thetas.append(theta)
 
@@ -580,7 +581,7 @@ class ETM(object):
 
             thetas = []
 
-            for idx, ind in enumerate(indices):
+            for ind in indices:
                 data_batch = data.get_batch(
                     X["tokens"],
                     X["counts"],
@@ -589,7 +590,7 @@ class ETM(object):
                     self.device)
                 sums = data_batch.sum(1).unsqueeze(1)
                 normalized_data_batch = data_batch / sums if self.bow_norm else data_batch
-                theta, _ = self.model.get_theta(normalized_data_batch, debug=False)
+                theta, _ = self.model.get_theta(normalized_data_batch)
 
                 thetas.append(theta)
 

@@ -1,6 +1,9 @@
 # Embedded Topic Model
 [![PyPI version](https://badge.fury.io/py/embedded-topic-model.svg)](https://badge.fury.io/py/embedded-topic-model)
 [![Actions Status](https://github.com/lffloyd/embedded-topic-model/workflows/Python%20package/badge.svg)](https://github.com/lffloyd/embedded-topic-model/actions)
+![GitHub contributors](https://img.shields.io/github/contributors/lffloyd/embedded-topic-model)
+![GitHub Repo stars](https://img.shields.io/github/stars/lffloyd/embedded-topic-model)
+[![Downloads](https://static.pepy.tech/badge/embedded-topic-model/month)](https://pepy.tech/project/embedded-topic-model)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/lffloyd/embedded-topic-model/blob/main/LICENSE)
 
 This package was made to easily run embedded topic modelling on a given corpus.
