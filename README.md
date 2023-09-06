@@ -18,7 +18,7 @@ ETM was originally published by Adji B. Dieng, Francisco J. R. Ruiz, and David M
 
 With the tools provided here, you can run ETM on your dataset using simple steps.
 
-# Index
+## Index
 
 * [:beer: Installation](#beer-installation)
 * [:wrench: Usage](#wrench-usage)
@@ -28,10 +28,10 @@ With the tools provided here, you can run ETM on your dataset using simple steps
 * [:v: Acknowledgements](#v-acknowledgements)
 * [:pushpin: License](#pushpin-license)
 
-# :beer: Installation
+## :beer: Installation
 You can install the package using ```pip``` by running: ```pip install -U embedded_topic_model```
 
-# :wrench: Usage
+## :wrench: Usage
 To use ETM on your corpus, you must first preprocess the documents into a format understandable by the model.
 This package has a quick-use preprocessing script. The only requirement is that the corpus must be composed
 by a list of strings, where each string corresponds to a document in the corpus.
@@ -140,13 +140,13 @@ print(f'test_d_t_dist: {test_d_t_dist}')
 
 For further details, see [examples](#microscope-examples).
 
-## :microscope: Examples
+### :microscope: Examples
 
 | title                                       | link |
 | :-------------:                             | :--: |
 | ETM example - Reddit (r/depression) dataset | [Jupyter Notebook](./2023-09-01%20-%20reddit%20-%20depression%20dataset%20-%20etm%20-%20example.ipynb) |
 
-# :books: Citation
+## :books: Citation
 To cite ETM, use the original article's citation:
 
 ```
@@ -158,11 +158,11 @@ To cite ETM, use the original article's citation:
 }
 ```
 
-# :heart: Contributing
+## :heart: Contributing
 Contributions are always welcomed :heart:! You can take a look at []() to see some guidelines. Feel free to contact through issues, to elaborate on desired enhancements and to check if work is already being done on the matter.
 
-# :v: Acknowledgements
+## :v: Acknowledgements
 Credits given to Adji B. Dieng, Francisco J. R. Ruiz, and David M. Blei for the original work.
 
-# :pushpin: License
+## :pushpin: License
 Licensed under [MIT](LICENSE) license.
