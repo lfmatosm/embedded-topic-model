@@ -18,8 +18,8 @@ class TestETM:
 
         expected_no_topics = 3
         expected_no_documents = 10
-        expected_t_w_dist_sums = torch.ones(expected_no_topics)
-        expected_d_t_dist_sums = torch.ones(expected_no_documents)
+        expected_t_w_dist_sums = torch.ones(expected_no_topics).to(torch.device('cpu'))
+        expected_d_t_dist_sums = torch.ones(expected_no_documents).to(torch.device('cpu'))
 
         etm_instance.fit(train_dataset)
 
@@ -59,7 +59,7 @@ class TestETM:
         assert len(t_w_dist_below_zero_elems) == 0, \
             'there are elements smaller than 0 in the topic-word distribution'
 
-        t_w_dist_sums = torch.sum(t_w_dist, 1)
+        t_w_dist_sums = torch.sum(t_w_dist, 1).to(torch.device('cpu'))
         assert torch.allclose(
             t_w_dist_sums, expected_t_w_dist_sums), "t_w_dist_sums error: exp = {}, result = {}".format(
             expected_t_w_dist_sums, t_w_dist_sums)
@@ -72,7 +72,7 @@ class TestETM:
         assert len(d_t_dist_below_zero_elems) == 0, \
             'there are elements smaller than 0 in the document-topic distribution'
 
-        d_t_dist_sums = torch.sum(d_t_dist, 1)
+        d_t_dist_sums = torch.sum(d_t_dist, 1).to(torch.device('cpu'))
         assert torch.allclose(
             d_t_dist_sums, expected_d_t_dist_sums), "d_t_dist_sums error: exp = {}, result = {}".format(
             expected_d_t_dist_sums, d_t_dist_sums)
@@ -92,8 +92,8 @@ class TestETM:
 
         expected_no_topics = 3
         expected_no_documents = 10
-        expected_t_w_dist_sums = torch.ones(expected_no_topics)
-        expected_d_t_dist_sums = torch.ones(expected_no_documents)
+        expected_t_w_dist_sums = torch.ones(expected_no_topics).to(torch.device('cpu'))
+        expected_d_t_dist_sums = torch.ones(expected_no_documents).to(torch.device('cpu'))
 
         etm_instance.fit(train_dataset)
 
@@ -125,7 +125,7 @@ class TestETM:
         assert len(t_w_dist_below_zero_elems) == 0, \
             'there are elements smaller than 0 in the topic-word distribution'
 
-        t_w_dist_sums = torch.sum(t_w_dist, 1)
+        t_w_dist_sums = torch.sum(t_w_dist, 1).to(torch.device('cpu'))
         assert torch.allclose(
             t_w_dist_sums, expected_t_w_dist_sums), "t_w_dist_sums error: exp = {}, result = {}".format(
             expected_t_w_dist_sums, t_w_dist_sums)
@@ -138,7 +138,7 @@ class TestETM:
         assert len(d_t_dist_below_zero_elems) == 0, \
             'there are elements smaller than 0 in the document-topic distribution'
 
-        d_t_dist_sums = torch.sum(d_t_dist, 1)
+        d_t_dist_sums = torch.sum(d_t_dist, 1).to(torch.device('cpu'))
         assert torch.allclose(
             d_t_dist_sums, expected_d_t_dist_sums), "d_t_dist_sums error: exp = {}, result = {}".format(
             expected_d_t_dist_sums, d_t_dist_sums)
@@ -159,8 +159,8 @@ class TestETM:
 
         expected_no_topics = 3
         expected_no_documents = 10
-        expected_t_w_dist_sums = torch.ones(expected_no_topics)
-        expected_d_t_dist_sums = torch.ones(expected_no_documents)
+        expected_t_w_dist_sums = torch.ones(expected_no_topics).to(torch.device('cpu'))
+        expected_d_t_dist_sums = torch.ones(expected_no_documents).to(torch.device('cpu'))
 
         etm_instance.fit(train_dataset)
 
@@ -192,7 +192,7 @@ class TestETM:
         assert len(t_w_dist_below_zero_elems) == 0, \
             'there are elements smaller than 0 in the topic-word distribution'
 
-        t_w_dist_sums = torch.sum(t_w_dist, 1)
+        t_w_dist_sums = torch.sum(t_w_dist, 1).to(torch.device('cpu'))
         assert torch.allclose(
             t_w_dist_sums, expected_t_w_dist_sums), "t_w_dist_sums error: exp = {}, result = {}".format(
             expected_t_w_dist_sums, t_w_dist_sums)
@@ -205,7 +205,7 @@ class TestETM:
         assert len(d_t_dist_below_zero_elems) == 0, \
             'there are elements smaller than 0 in the document-topic distribution'
 
-        d_t_dist_sums = torch.sum(d_t_dist, 1)
+        d_t_dist_sums = torch.sum(d_t_dist, 1).to(torch.device('cpu'))
         assert torch.allclose(
             d_t_dist_sums, expected_d_t_dist_sums), "d_t_dist_sums error: exp = {}, result = {}".format(
             expected_d_t_dist_sums, d_t_dist_sums)
@@ -226,8 +226,8 @@ class TestETM:
 
         expected_no_topics = 3
         expected_no_documents = 10
-        expected_t_w_dist_sums = torch.ones(expected_no_topics)
-        expected_d_t_dist_sums = torch.ones(expected_no_documents)
+        expected_t_w_dist_sums = torch.ones(expected_no_topics).to(torch.device('cpu'))
+        expected_d_t_dist_sums = torch.ones(expected_no_documents).to(torch.device('cpu'))
 
         etm_instance.fit(train_dataset)
 
@@ -259,7 +259,7 @@ class TestETM:
         assert len(t_w_dist_below_zero_elems) == 0, \
             'there are elements smaller than 0 in the topic-word distribution'
 
-        t_w_dist_sums = torch.sum(t_w_dist, 1)
+        t_w_dist_sums = torch.sum(t_w_dist, 1).to(torch.device('cpu'))
         assert torch.allclose(
             t_w_dist_sums, expected_t_w_dist_sums), "t_w_dist_sums error: exp = {}, result = {}".format(
             expected_t_w_dist_sums, t_w_dist_sums)
@@ -272,7 +272,7 @@ class TestETM:
         assert len(d_t_dist_below_zero_elems) == 0, \
             'there are elements smaller than 0 in the document-topic distribution'
 
-        d_t_dist_sums = torch.sum(d_t_dist, 1)
+        d_t_dist_sums = torch.sum(d_t_dist, 1).to(torch.device('cpu'))
         assert torch.allclose(
             d_t_dist_sums, expected_d_t_dist_sums), "d_t_dist_sums error: exp = {}, result = {}".format(
             expected_d_t_dist_sums, d_t_dist_sums)
