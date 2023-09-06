@@ -148,7 +148,7 @@ class ETM(object):
             for line in iterator:
                 word = line[0]
                 if word in self.vocabulary:
-                    vect = np.array(line[1:]).astype(np.float)
+                    vect = np.array(line[1:]).astype(float)
                     vectors[word] = vect
             return vectors
         elif self._get_extension(embeddings_file) == 'bin':
