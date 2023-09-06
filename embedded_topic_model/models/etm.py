@@ -112,7 +112,6 @@ class ETM(object):
         torch.manual_seed(self.seed)
 
         np.random.seed(self.seed)
-        torch.manual_seed(self.seed)
 
         self.embeddings = None if train_embeddings else self._initialize_embeddings(
             embeddings, use_c_format_w2vec=use_c_format_w2vec)

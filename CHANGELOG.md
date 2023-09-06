@@ -2,6 +2,17 @@
 
 This changelog was inspired by the [keep-a-changelog](https://github.com/olivierlacan/keep-a-changelog) project and follows [semantic versioning](https://semver.org).
 
+## [1.2.0] - 2023-09-06
+
+### Added
+
+- ([#61730d](https://github.com/lffloyd/embedded-topic-model/commit/61730d), [#224995](https://github.com/lffloyd/embedded-topic-model/commit/224995), [#331fc0](https://github.com/lffloyd/embedded-topic-model/commit/331fc0)) adds support for macOS MPS devices and updates outdated `numpy`/`sklearn` code - thanks to [@d-jiao](https://github.com/d-jiao)
+- ([#c48016](https://github.com/lffloyd/embedded-topic-model/commit/c48016), [#2fe517](https://github.com/lffloyd/embedded-topic-model/commit/2fe517), [#c965b1](https://github.com/lffloyd/embedded-topic-model/commit/c965b1), [#5578ca](https://github.com/lffloyd/embedded-topic-model/commit/5578ca), [#5b0d85](https://github.com/lffloyd/embedded-topic-model/commit/5b0d85)) adds security guidelines and request templates
+
+### Changed
+
+- ([#331fc0](https://github.com/lffloyd/embedded-topic-model/commit/331fc0), [#c918a4](https://github.com/lffloyd/embedded-topic-model/commit/c918a4)) updates actions pipeline, supported python versions and internal dependencies to the latest available like `torch`, `gensim`, among others. Support for `python<=3.8` was dropped as a result. Numerous security vulnerabilities were solved
+
 ## [1.1.0] - 2023-09-05
 
 ### Added
